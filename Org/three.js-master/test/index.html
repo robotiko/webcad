@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <script type="text/javascript" src="../build/three.js"></script>
+        <script type="text/javascript" src="./OrbitControls.js"></script>
+        <style>canvas { width: 100%; height: 100% }
+        body{margin:0px;}
+        </style>
+    </head>
+    <body>
+    	<script type="text/javascript">
+    	var controls;
+
+    	var face = {
+    		top:"top",
+    		bottom:"bottom",
+    		up:"up",
+    		down:"down",
+    		front:"front",
+    		back:"back",
+    		left:"left",
+    		right:"right",
+    		ft:"fronttop",
+    		bt:"backtop",
+    		lt:"lefttop",
+    		rt:"righttop",
+    		fb:"frontbottom",
+    		bb:"backbottom",
+    		lb:"leftbottom",
+    		rb:"rightbottom",
+    		fr:"frontright",
+    		fl:"frontleft",
+    		br:"backright",
+    		bl:"backleft",
+    		tfr:"topfrontright",
+    		tbr:"topbackright",
+    		tfl:"topfrontleft",
+    		tbl:"topbackleft",
+    		bfr:"bottomfrontright",
+    		bbr:"bottombackright",
+    		bfl:"bottomfrontleft",
+    		bbl:"bottombackleft",
+    	}
+    	var oriantation={
+    		top:"top",
+    		bottom:"bottom",
+    		up:"up",
+    		down:"down",
+    		east:"east",
+    		north:"north",
+    		west:"west",
+    		south:"south",
+    		sw:"southwest",
+    		se:"southeast",
+    		nw:"northwest",
+    		ne:"northeast",
+    		st:"southtop",
+    		sb:"southbottom",
+    		nt:"northtop",
+    		nb:"northbottom",
+    		et:"easttop",
+    		wt:"westtop",
+    		eb:"eastbottom",
+    		wb:"westbottom",
+    		swt:"southwesttop",
+    		set:"southeasttop",
+    		nwt:"northwesttop",
+    		net:"northeasttop",
+    		swb:"southwestbottom",
+    		seb:"southeastbottom",
+    		nwb:"northwestbottom",
+    		neb:"northeastbottom",
+
+    	}
+		var camera, controls, scene, renderer;
+
+    	init();
+    			function animate() {
+
+				requestAnimationFrame(animate);
+				controls.update();
+
+			}
+    	function init(){
+
+
+    	scene = new THREE.Scene();
+    	camera = new THREE.PerspectiveCamera( 75, window.innerWidth /window.innerHeight, 0.1, 1000 );
+
+    	renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.setClearColor( 0xf0f0f0 );
+		renderer.setSize( window.innerWidth, window.innerHeight );
+    	document.body.appendChild(renderer.domElement);
+    	//add OrbitControls
+
+    	//create viewcube box
+    	var swbgeo = new THREE.BoxGeometry(1,1,1);
+    	var sbgeo = new THREE.BoxGeometry(3,1,1);
+    	var sebgeo = new THREE.BoxGeometry(1,1,1);
+    	var wbgeo = new THREE.BoxGeometry(1,3,1);
+    	var bottomgeo = new THREE.BoxGeometry(3,3,1);
+    	var ebgeo = new THREE.BoxGeometry(1,3,1);
+    	var nwbgeo = new THREE.BoxGeometry(1,1,1);
+    	var nbgeo = new THREE.BoxGeometry(3,1,1);
+    	var nebgeo = new THREE.BoxGeometry(1,1,1);
+
+    	var swgeo = new THREE.BoxGeometry(1,1,3);
+    	var southgeo = new THREE.BoxGeometry(3,1,3);
+    	var segeo = new THREE.BoxGeometry(1,1,3);
+    	var westgeo = new THREE.BoxGeometry(1,3,3);
+    	var middlegeo = new THREE.BoxGeometry(3,3,3);
+    	var eastgeo = new THREE.BoxGeometry(1,3,3);
+    	var nwgeo = new THREE.BoxGeometry(1,1,3);
+    	var northgeo = new THREE.BoxGeometry(3,1,3);
+    	var negeo = new THREE.BoxGeometry(1,1,3);
+
+    	var swtgeo = new THREE.BoxGeometry(1,1,1);
+    	var stgeo = new THREE.BoxGeometry(3,1,1);
+    	var setgeo = new THREE.BoxGeometry(1,1,1);
+    	var wtgeo = new THREE.BoxGeometry(1,3,1);
+    	var topgeo = new THREE.BoxGeometry(3,3,1);
+    	var etgeo = new THREE.BoxGeometry(1,3,1);
+    	var nwtgeo = new THREE.BoxGeometry(1,1,1);
+    	var ntgeo = new THREE.BoxGeometry(3,1,1);
+    	var netgeo = new THREE.BoxGeometry(1,1,1);
+
+    	//set the position of the viewcube box
+    /*	swbgeo.setPosition(new THREE.Vector3( 0, 0, 0 ));
+    	sbgeo.setPosition(new THREE.Vector3(1,0,0));
+    	sebgeo.setPosition(new THREE.Vector3(4,0,0));
+*/
+    	//create viewcube box group
+    	group = new THREE.Object3D();
+
+    	//create material for viewcube box
+    	var material = new THREE.MeshBasicMaterial({color:0x00ff23});
+    	var material1 = new THREE.MeshBasicMaterial({color:0x885513});
+    	var material2 = new THREE.MeshBasicMaterial({color:0xddff00});
+    	var material3 = new THREE.MeshBasicMaterial({color:0x000000});
+    	var material4 = new THREE.MeshBasicMaterial({color:0x1199aa});
+
+
+    	//create mesh for viewcube box
+    	var swbmesh = new THREE.Mesh(swbgeo, material);
+    	swbmesh.position.x= 0.5;
+    	swbmesh.position.y= 0.5;
+    	swbmesh.position.z= 0.5;
+    	swbmesh.addEventListener('mousemove',highlight,false);
+    	group.add(swbmesh);
+    	var sbmesh = new THREE.Mesh(sbgeo, material1);
+    	sbmesh.position.x = 2.5;
+    	sbmesh.position.y = 0.5;
+    	sbmesh.position.z = 0.5;
+    	sbmesh.addEventListener('mousemove',highlight,false);
+    	group.add(sbmesh);
+    	var sebmesh = new THREE.Mesh(sebgeo,material2);
+    	sebmesh.position.x = 4.5;
+    	sebmesh.position.y = 0.5;
+    	sebmesh.position.z = 0.5;
+    	group.add(sebmesh);
+    	var wbmesh = new THREE.Mesh(wbgeo, material1);
+    	wbmesh.position.x= 0.5;
+      	wbmesh.position.y= 2.5;  	
+    	wbmesh.position.z = 0.5;
+    	group.add(wbmesh);
+    	var bottommesh = new THREE.Mesh(bottomgeo, material2);
+    	bottommesh.position.x = 2.5;
+      	bottommesh.position.y= 2.5;  	
+      	bottommesh.position.z= 0.5;  	
+    	group.add(bottommesh);
+    	var ebmesh = new THREE.Mesh(ebgeo,material);
+    	ebmesh.position.x = 4.5;
+      	ebmesh.position.y= 2.5;  	
+    	ebmesh.position.z = 0.5;
+    	group.add(ebmesh);
+    	var nwbmesh = new THREE.Mesh(nwbgeo, material);
+    	nwbmesh.position.x= 0.5;
+    	nwbmesh.position.y= 4.5;
+    	nwbmesh.position.z= 0.5;
+    	group.add(nwbmesh);
+    	var nbmesh = new THREE.Mesh(nbgeo, material1);
+    	nbmesh.position.x = 2.5;
+    	nbmesh.position.y= 4.5;
+    	nbmesh.position.z= 0.5;
+    	group.add(nbmesh);
+    	var nebmesh = new THREE.Mesh(nebgeo,material2);
+    	nebmesh.position.x = 4.5;
+    	nebmesh.position.y= 4.5;
+    	nebmesh.position.z= 0.5;
+    	group.add(nebmesh);
+
+    	var swmesh = new THREE.Mesh(swgeo, material1);
+    	swmesh.position.x= 0.5;
+    	swmesh.position.y= 0.5;
+    	swmesh.position.z= 2.5;
+    	group.add(swmesh);
+    	var southmesh = new THREE.Mesh(southgeo, material2);
+    	southmesh.position.x = 2.5;
+    	southmesh.position.y = 0.5;
+    	southmesh.position.z = 2.5;
+    	group.add(southmesh);
+    	var semesh = new THREE.Mesh(segeo,material);
+    	semesh.position.x = 4.5;
+    	semesh.position.y = 0.5;
+    	semesh.position.z = 2.5;
+    	group.add(semesh);
+    	var westmesh = new THREE.Mesh(westgeo, material4);
+    	westmesh.position.x= 0.5;
+      	westmesh.position.y= 2.5;  	
+    	westmesh.position.z = 2.5;
+    	group.add(westmesh);
+    	var middlemesh = new THREE.Mesh(middlegeo, material1);
+    	middlemesh.position.x = 2.5;
+      	middlemesh.position.y= 2.5;  	
+      	middlemesh.position.z= 2.5;  	
+    	group.add(middlemesh);
+    	var eastmesh = new THREE.Mesh(eastgeo,material4);
+    	eastmesh.position.x = 4.5;
+      	eastmesh.position.y= 2.5;  	
+    	eastmesh.position.z = 2.5;
+    	group.add(eastmesh);
+    	var nwmesh = new THREE.Mesh(nwgeo, material2);
+    	nwmesh.position.x= 0.5;
+    	nwmesh.position.y= 4.5;
+    	nwmesh.position.z= 2.5;
+    	group.add(nwmesh);
+    	var northmesh = new THREE.Mesh(northgeo, material);
+    	northmesh.position.x = 2.5;
+    	northmesh.position.y= 4.5;
+    	northmesh.position.z= 2.5;
+    	group.add(northmesh);
+    	var nemesh = new THREE.Mesh(negeo,material1);
+    	nemesh.position.x = 4.5;
+    	nemesh.position.y= 4.5;
+    	nemesh.position.z= 2.5;
+    	group.add(nemesh);
+
+    	var swtmesh = new THREE.Mesh(swtgeo, material);
+    	swtmesh.position.x= 0.5;
+    	swtmesh.position.y= 0.5;
+    	swtmesh.position.z= 4.5;
+    	group.add(swtmesh);
+    	var stmesh = new THREE.Mesh(stgeo, material1);
+    	stmesh.position.x = 2.5;
+    	stmesh.position.y = 0.5;
+    	stmesh.position.z = 4.5;
+    	group.add(stmesh);
+    	var setmesh = new THREE.Mesh(setgeo,material2);
+    	setmesh.position.x = 4.5;
+    	setmesh.position.y = 0.5;
+    	setmesh.position.z = 4.5;
+    	group.add(setmesh);
+    	var wtmesh = new THREE.Mesh(wtgeo, material1);
+    	wtmesh.position.x= 0.5;
+      	wtmesh.position.y= 2.5;  	
+    	wtmesh.position.z = 4.5;
+    	wtmesh.addEventListener()
+    	group.add(wtmesh);
+    	var topmesh = new THREE.Mesh(topgeo, material2);
+    	topmesh.position.x = 2.5;
+      	topmesh.position.y= 2.5;  	
+      	topmesh.position.z= 4.5;  	
+    	group.add(topmesh);
+    	var etmesh = new THREE.Mesh(etgeo,material);
+    	etmesh.position.x = 4.5;
+      	etmesh.position.y= 2.5;  	
+    	etmesh.position.z = 4.5;
+    	group.add(etmesh);
+    	var nwtmesh = new THREE.Mesh(nwtgeo, material);
+    	nwtmesh.position.x= 0.5;
+    	nwtmesh.position.y= 4.5;
+    	nwtmesh.position.z= 4.5;
+    	group.add(nwtmesh);
+    	var ntmesh = new THREE.Mesh(ntgeo, material1);
+    	ntmesh.position.x = 2.5;
+    	ntmesh.position.y= 4.5;
+    	ntmesh.position.z= 4.5;
+    	group.add(ntmesh);
+    	var netmesh = new THREE.Mesh(netgeo,material2);
+    	netmesh.position.x = 4.5;
+    	netmesh.position.y= 4.5;
+    	netmesh.position.z= 4.5;
+    	group.add(netmesh);
+
+
+    	scene.add(group);
+    	camera.position.z=20;
+
+		controls = new THREE.OrbitControls( camera );
+		controls.damping = 0.2;
+		controls.addEventListener( 'change', render );
+		animate();
+  		
+    	}
+
+		function highlight (e){
+			// this.material.color = THREE.ColorKeywords.deeppink;
+		}
+
+		var render = function () {
+
+			// requestAnimationFrame(render);
+
+			// group.rotation.x += 0.01;
+			// group.rotation.y += 0.01;
+			// controls.update();
+
+			renderer.render(scene, camera);
+
+		};
+
+		render();
+
+
+    	</script>
+
+    </body>
+</html>
