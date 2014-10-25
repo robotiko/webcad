@@ -1,0 +1,76 @@
+{
+	"metadata": {
+		"version": 4.3,
+		"type": "Object",
+		"generator": "ObjectExporter"
+	},
+	"geometries": [
+		{
+			"uuid": "8A3C8136-B1A0-4E5C-8BCD-EB019D31F26D",
+			"type": "BoxGeometry",
+			"width": 100,
+			"height": 100,
+			"depth": 100,
+			"widthSegments": 1,
+			"heightSegments": 1,
+			"depthSegments": 1
+		},
+		{
+			"uuid": "DC34B39B-8D1A-4E66-81FA-EA8BC048C37F",
+			"type": "TorusKnotGeometry",
+			"radius": 100,
+			"tube": 40,
+			"radialSegments": 64,
+			"tubularSegments": 8,
+			"p": 2,
+			"q": 3,
+			"heightScale": 1
+		}],
+	"materials": [
+		{
+			"uuid": "7958B414-E596-4319-893F-76D5D54481F8",
+			"type": "MeshPhongMaterial",
+			"color": 16777215,
+			"ambient": 16777215,
+			"emissive": 0,
+			"specular": 1118481,
+			"shininess": 30,
+			"opacity": 1,
+			"transparent": false,
+			"wireframe": false
+		},
+		{
+			"uuid": "56747A38-68E8-4539-9F08-D4F0B88225C1",
+			"type": "MeshPhongMaterial",
+			"color": 16777215,
+			"ambient": 16777215,
+			"emissive": 0,
+			"specular": 1118481,
+			"shininess": 30,
+			"opacity": 1,
+			"transparent": false,
+			"wireframe": false
+		}],
+	"object": {
+		"uuid": "CB0A9697-ACA3-41FB-9B91-C64AE3A4F8F0",
+		"type": "Scene",
+		"matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+		"children": [
+			{
+				"uuid": "AE7B046F-9070-4091-81C0-180E802090A5",
+				"name": "Box 1",
+				"type": "Mesh",
+				"geometry": "8A3C8136-B1A0-4E5C-8BCD-EB019D31F26D",
+				"material": "7958B414-E596-4319-893F-76D5D54481F8",
+				"matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]
+			},
+			{
+				"uuid": "2A413EA8-00AD-45FF-80DF-9935B3402C71",
+				"name": "TorusKnot 2",
+				"type": "Mesh",
+				"geometry": "DC34B39B-8D1A-4E66-81FA-EA8BC048C37F",
+				"material": "56747A38-68E8-4539-9F08-D4F0B88225C1",
+				"matrix": [1,0,0,0,0,1,0,0,0,0,1,0,-210.0701904296875,1.4371166229248047,205.78387451171875,1]
+			}]
+	}
+}

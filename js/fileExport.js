@@ -156,3 +156,9 @@
 		exportScene( THREE.STLExporter );
 
 	}
+	
+	// create file input element for scene import
+
+	var fileInput = document.createElement( 'input' );
+	fileInput.type = 'file';
+	fileInput.addEventListener( 'change', onFileInputChange);
