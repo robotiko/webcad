@@ -94,9 +94,27 @@
         <script src="js/addObj.js"></script>
         <script src="js/fileExport.js"></script>
 
+        <link rel="stylesheet" href="style.css">
+
     </head>
     <body class="metro" ><!-- onload="initViewPoint()"-->
+  <ul class="pages">
+    <li class="chat page">
+      <div class="chatArea">
+        <ul class="messages"></ul>
+      </div>
+      <input class="inputMessage" placeholder="Type here..."/>
+    </li>
+    <li class="login page">
+      <div class="form">
+        <h3 class="title">What's your nickname?</h3>
+        <input class="usernameInput" type="text" maxlength="14" />
+      </div>
+    </li>
+  </ul>
 
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/main.js"></script>
 
     <div class="fluent-menu" data-role="fluentmenu">
                 <ul class="tabs-holder">
@@ -162,16 +180,16 @@
                                         <li onclick="onAmbientLightOptionClick()"><a>AmbientLight</a></li>
                                     </ul>
                                 </div>
-                                <div class="tab-content-segment">
+                                <div class="tab-content-segment" onclick="onPlaneOptionClick()">
                                     <button class="fluent-big-button">
                                         <span class="icon-tablet"></span>
-                                        <span class="button-label" onclick="onPlaneOptionClick()">Plane</span>
+                                        <span class="button-label">Plane</span>
                                     </button>
                                 </div>
                                 <div class="tab-content-segment">
-                                    <button class="fluent-big-button">
+                                    <button class="fluent-big-button" onclick="onObjectDelectClick()">
                                         <span class="icon-cancel"></span>
-                                        <span class="button-label">Delete</span>
+                                        <span class="button-label" >Delete</span>
                                     </button>
                                 </div>
                            </div>
@@ -349,8 +367,6 @@
 			onWindowResize();
 
 		</script>
-<!--            <div class="viewpoint">
-                
-        </div>-->
+
     </body>
 </html>

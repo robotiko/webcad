@@ -14,6 +14,17 @@
 
 	}
 
+	function onObjectDelectClick(){
+		if (editor.selected != null) {
+			var parent = editor.selected.parent;
+			editor.removeObject( editor.selected );
+			editor.select( parent );
+		}else{
+			alert("select object to delete first!");
+		}
+
+	}
+
 	function onPlaneOptionClick () {
 
 		var width = 200;

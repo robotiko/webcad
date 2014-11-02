@@ -2,7 +2,7 @@
 * @Author: chunlei.hou
 * @Date:   2014-10-23 13:04:01
 * @Last Modified by:   chunlei.hou
-* @Last Modified time: 2014-10-23 13:04:06
+* @Last Modified time: 2014-11-02 15:44:53
 */
 
 	function exportGeometry ( exporterClass ) {
@@ -162,3 +162,5 @@
 	var fileInput = document.createElement( 'input' );
 	fileInput.type = 'file';
 	fileInput.addEventListener( 'change', onFileInputChange);
+
+	// postObject
