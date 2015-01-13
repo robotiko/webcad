@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - 沿物体表面放置对象</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				color: #61443e;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+
+				background-color: #bfd1e5;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			#info {
+				position: absolute;
+				top: 0px; width: 100%;
+				padding: 5px;
+			}
+
+			a {
+
+				color: #a06851;
+			}
+
+		</style>
+	</head>
+	<body>
+
+		<div id="container"><br /><br /><br /><br /><br />Generating world...</div>
+		<div id="info"><a href="http://threejs.org" target="_blank">three.js</a> - demo: 沿物体表面放置对象</div>
+
+		<script src="../build/three.js"></script>
+
+		<script src="js/controls/OrbitControls.js"></script>
+
+		<script src="js/Detector.js"></script>
+		<script src="js/libs/stats.min.js"></script>
+
+		<script>
+
+			if ( ! Detector.webgl ) {
+
+				Detector.addGetWebGLMessage();
+				document.getElementById( 'container' ).innerHTML = "";
+
+			}
+
+			var container, stats;
+
+			var camera, controls, scene, renderer;
+
+			var floor,wall1,wall2;
+
+			var clock = new THREE.Clock();
+
+			var shouldSphereFollowMouse = true;
+			var helper;
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.getElementById( 'container' );
+
+				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 20000 );
+
+				scene = new THREE.Scene();
+
+				controls = new THREE.OrbitControls(camera);
+				controls.center.set(0.0, 1500.0, 0.0);
+				controls.userPanSpeed = 100;
+
+				camera.position.y =  controls.center.y + 3000;
+				camera.position.x = 6500;
+				camera.position.z = -6500;
+
+				var floorg = new THREE.BoxGeometry( 5000, 240, 5000 );
+				var material = new THREE.MeshNormalMaterial( { shading: THREE.SmoothShading } );
+				floor = new THREE.Mesh( floorg, material );
+				scene.add( floor ); 
+
+
+				var wall1g = new THREE.BoxGeometry( 5000, 5000, 240 );
+				wall1g.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 2500, 2500 ) );
+				wall1 = new THREE.Mesh( wall1g, material );
+				scene.add( wall1 ); 
+
+				var wall2g = new THREE.BoxGeometry( 240, 5000, 5000 );
+				wall2g.applyMatrix( new THREE.Matrix4().makeTranslation( -2500, 2500, 0 ) );
+				wall2 = new THREE.Mesh( wall2g, material );
+				scene.add( wall2 ); 
+
+				var geometry = new THREE.CylinderGeometry( 0, 20, 100, 3 );
+				geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 50, 0 ) );
+				geometry.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+				helper = new THREE.Mesh( geometry, new THREE.MeshNormalMaterial() );
+				scene.add( helper );
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setClearColor( 0xbfd1e5 );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				container.innerHTML = "";
+
+				container.appendChild( renderer.domElement );
+				container.addEventListener( 'mousemove', onMouseMove, false );
+				container.addEventListener('click',onMouseClick,false);
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				container.appendChild( stats.domElement );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				controls.handleResize();
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				render();
+				stats.update();
+
+			}
+
+			function render() {
+
+				controls.update( clock.getDelta() );
+				renderer.render( scene, camera );
+
+			}
+
+			function onMouseClick(event){
+				if ( shouldSphereFollowMouse ) {
+
+					var mouseX = ( event.clientX / window.innerWidth ) * 2 - 1;
+					var mouseY = -( event.clientY / window.innerHeight ) * 2 + 1;
+
+					var vector = new THREE.Vector3( mouseX, mouseY, camera.near );
+
+					var projector = new THREE.Projector();
+					projector.unprojectVector( vector, camera );
+
+					var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+					var intersects = raycaster.intersectObject( floor );
+					lastIntersects = intersects;
+
+					if ( intersects.length > 0 ) {
+						var geometry = new THREE.CylinderGeometry( 0, 20, 100, 3 );
+						geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 50, 0 ) );
+						geometry.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+						helper = new THREE.Mesh( geometry, new THREE.MeshNormalMaterial() );
+						scene.add( helper );
+						helper.position.set( 0, 0, 0 );
+						helper.lookAt( intersects[ 0 ].face.normal );
+
+						helper.position.copy( intersects[ 0 ].point );
+
+					}
+				}
+			}
+
+			function onMouseMove( event ) {
+
+				if ( shouldSphereFollowMouse ) {
+
+					var mouseX = ( event.clientX / window.innerWidth ) * 2 - 1;
+					var mouseY = -( event.clientY / window.innerHeight ) * 2 + 1;
+
+					var vector = new THREE.Vector3( mouseX, mouseY, camera.near );
+
+					var projector = new THREE.Projector();
+					projector.unprojectVector( vector, camera );
+
+					var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+					var intersects = raycaster.intersectObject( floor );
+					lastIntersects = intersects;
+
+					if ( intersects.length > 0 ) {
+
+						helper.position.set( 0, 0, 0 );
+						helper.lookAt( intersects[ 0 ].face.normal );
+
+						helper.position.copy( intersects[ 0 ].point );
+
+					}
+				}
+			}
+
+		</script>
+
+	</body>
+</html>
