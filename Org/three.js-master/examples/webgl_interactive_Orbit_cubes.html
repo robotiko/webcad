@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - draggable cubes</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #f0f0f0;
+				margin: 0px;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+
+		<script src="../build/three.min.js"></script>
+
+		<script src="js/controls/TrackballControls.js"></script>
+
+		<script src="js/libs/stats.min.js"></script>
+
+		<script>
+
+			var container, stats;
+			var camera, controls, scene, projector, renderer;
+			var objects = [], plane;
+
+			var mouse = new THREE.Vector2(),
+			offset = new THREE.Vector3(),
+			INTERSECTED, SELECTED;
+
+			init();
+			animate();
+
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.z = 20;
+
+				controls = new THREE.TrackballControls( camera );
+				controls.rotateSpeed = 1.0;
+				controls.zoomSpeed = 1.2;
+				controls.panSpeed = 0.8;
+				controls.noZoom = false;
+				controls.noPan = false;
+				controls.staticMoving = true;
+				controls.dynamicDampingFactor = 0.3;
+
+				scene = new THREE.Scene();
+
+				scene.add( new THREE.AmbientLight( 0x505050 ) );
+
+				var light = new THREE.SpotLight( 0xffffff, 1.5 );
+				light.position.set( 0, 500, 2000 );
+				light.castShadow = true;
+
+				light.shadowCameraNear = 200;
+				light.shadowCameraFar = camera.far;
+				light.shadowCameraFov = 50;
+
+				light.shadowBias = -0.00022;
+				light.shadowDarkness = 0.5;
+
+				light.shadowMapWidth = 2048;
+				light.shadowMapHeight = 2048;
+
+				scene.add( light );
+
+
+		    	//create viewcube box
+		    	var swbgeo = new THREE.BoxGeometry(1,1,1);
+		    	var sbgeo = new THREE.BoxGeometry(3,1,1);
+		    	var sebgeo = new THREE.BoxGeometry(1,1,1);
+		    	var wbgeo = new THREE.BoxGeometry(1,3,1);
+		    	var bottomgeo = new THREE.BoxGeometry(3,3,1);
+		    	var ebgeo = new THREE.BoxGeometry(1,3,1);
+		    	var nwbgeo = new THREE.BoxGeometry(1,1,1);
+		    	var nbgeo = new THREE.BoxGeometry(3,1,1);
+		    	var nebgeo = new THREE.BoxGeometry(1,1,1);
+
+		    	var swgeo = new THREE.BoxGeometry(1,1,3);
+		    	var southgeo = new THREE.BoxGeometry(3,1,3);
+		    	var segeo = new THREE.BoxGeometry(1,1,3);
+		    	var westgeo = new THREE.BoxGeometry(1,3,3);
+		    	var middlegeo = new THREE.BoxGeometry(3,3,3);
+		    	var eastgeo = new THREE.BoxGeometry(1,3,3);
+		    	var nwgeo = new THREE.BoxGeometry(1,1,3);
+		    	var northgeo = new THREE.BoxGeometry(3,1,3);
+		    	var negeo = new THREE.BoxGeometry(1,1,3);
+
+		    	var swtgeo = new THREE.BoxGeometry(1,1,1);
+		    	var stgeo = new THREE.BoxGeometry(3,1,1);
+		    	var setgeo = new THREE.BoxGeometry(1,1,1);
+		    	var wtgeo = new THREE.BoxGeometry(1,3,1);
+		    	var topgeo = new THREE.BoxGeometry(3,3,1);
+		    	var etgeo = new THREE.BoxGeometry(1,3,1);
+		    	var nwtgeo = new THREE.BoxGeometry(1,1,1);
+		    	var ntgeo = new THREE.BoxGeometry(3,1,1);
+		    	var netgeo = new THREE.BoxGeometry(1,1,1);
+
+		  		group = new THREE.Object3D();
+
+		    	//create material for viewcube box
+		    	var material = new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } );
+		    	var material1 = new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } );
+		    	var material2 = new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } );
+		    	var material3 = new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } );
+		    	var material4 = new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } );
+
+
+		    	//create mesh for viewcube box
+		    	var swbmesh = new THREE.Mesh(swbgeo, material);
+		    	swbmesh.position.x= 0.5;
+		    	swbmesh.position.y= 0.5;
+		    	swbmesh.position.z= 0.5;
+		    	scene.add(swbmesh);
+		    	objects.push(swbmesh);
+		    	var sbmesh = new THREE.Mesh(sbgeo, material1);
+		    	sbmesh.position.x = 2.5;
+		    	sbmesh.position.y = 0.5;
+		    	sbmesh.position.z = 0.5;
+		    	scene.add(sbmesh);
+		    	objects.push(sbmesh);
+		    	var sebmesh = new THREE.Mesh(sebgeo,material2);
+		    	sebmesh.position.x = 4.5;
+		    	sebmesh.position.y = 0.5;
+		    	sebmesh.position.z = 0.5;
+		    	scene.add(sebmesh);
+		    	objects.push(sebmesh);
+		    	var wbmesh = new THREE.Mesh(wbgeo, material1);
+		    	wbmesh.position.x= 0.5;
+		      	wbmesh.position.y= 2.5;  	
+		    	wbmesh.position.z = 0.5;
+		    	scene.add(wbmesh);
+		    	objects.push(wbmesh);
+		    	var bottommesh = new THREE.Mesh(bottomgeo, material2);
+		    	bottommesh.position.x = 2.5;
+		      	bottommesh.position.y= 2.5;  	
+		      	bottommesh.position.z= 0.5;  	
+		    	scene.add(bottommesh);
+		    	objects.push(bottommesh);
+		    	var ebmesh = new THREE.Mesh(ebgeo,material);
+		    	ebmesh.position.x = 4.5;
+		      	ebmesh.position.y= 2.5;  	
+		    	ebmesh.position.z = 0.5;
+		    	scene.add(ebmesh);
+		    	objects.push(ebmesh);
+		    	var nwbmesh = new THREE.Mesh(nwbgeo, material);
+		    	nwbmesh.position.x= 0.5;
+		    	nwbmesh.position.y= 4.5;
+		    	nwbmesh.position.z= 0.5;
+		    	scene.add(nwbmesh);
+		    	objects.push(nwbmesh);
+		    	var nbmesh = new THREE.Mesh(nbgeo, material1);
+		    	nbmesh.position.x = 2.5;
+		    	nbmesh.position.y= 4.5;
+		    	nbmesh.position.z= 0.5;
+		    	scene.add(nbmesh);
+		    	objects.push(nbmesh);
+		    	var nebmesh = new THREE.Mesh(nebgeo,material2);
+		    	nebmesh.position.x = 4.5;
+		    	nebmesh.position.y= 4.5;
+		    	nebmesh.position.z= 0.5;
+		    	scene.add(nebmesh);
+		    	objects.push(nebmesh);
+
+		    	var swmesh = new THREE.Mesh(swgeo, material1);
+		    	swmesh.position.x= 0.5;
+		    	swmesh.position.y= 0.5;
+		    	swmesh.position.z= 2.5;
+		    	scene.add(swmesh);
+		    	objects.push(swmesh);
+		    	var southmesh = new THREE.Mesh(southgeo, material2);
+		    	southmesh.position.x = 2.5;
+		    	southmesh.position.y = 0.5;
+		    	southmesh.position.z = 2.5;
+		    	scene.add(southmesh);
+		    	objects.push(southmesh);
+		    	var semesh = new THREE.Mesh(segeo,material);
+		    	semesh.position.x = 4.5;
+		    	semesh.position.y = 0.5;
+		    	semesh.position.z = 2.5;
+		    	scene.add(semesh);
+		    	objects.push(semesh);
+		    	var westmesh = new THREE.Mesh(westgeo, material4);
+		    	westmesh.position.x= 0.5;
+		      	westmesh.position.y= 2.5;  	
+		    	westmesh.position.z = 2.5;
+		    	scene.add(westmesh);
+		    	objects.push(westmesh);
+		    	var middlemesh = new THREE.Mesh(middlegeo, material1);
+		    	middlemesh.position.x = 2.5;
+		      	middlemesh.position.y= 2.5;  	
+		      	middlemesh.position.z= 2.5;  	
+		    	scene.add(middlemesh);
+		    	objects.push(middlemesh);
+		    	var eastmesh = new THREE.Mesh(eastgeo,material4);
+		    	eastmesh.position.x = 4.5;
+		      	eastmesh.position.y= 2.5;  	
+		    	eastmesh.position.z = 2.5;
+		    	scene.add(eastmesh);
+		    	objects.push(eastmesh);
+		    	var nwmesh = new THREE.Mesh(nwgeo, material2);
+		    	nwmesh.position.x= 0.5;
+		    	nwmesh.position.y= 4.5;
+		    	nwmesh.position.z= 2.5;
+		    	scene.add(nwmesh);
+		    	objects.push(nwmesh);
+		    	var northmesh = new THREE.Mesh(northgeo, material);
+		    	northmesh.position.x = 2.5;
+		    	northmesh.position.y= 4.5;
+		    	northmesh.position.z= 2.5;
+		    	scene.add(northmesh);
+		    	objects.push(northmesh);
+		    	var nemesh = new THREE.Mesh(negeo,material1);
+		    	nemesh.position.x = 4.5;
+		    	nemesh.position.y= 4.5;
+		    	nemesh.position.z= 2.5;
+		    	scene.add(nemesh);
+		    	objects.push(nemesh);
+
+		    	var swtmesh = new THREE.Mesh(swtgeo, material);
+		    	swtmesh.position.x= 0.5;
+		    	swtmesh.position.y= 0.5;
+		    	swtmesh.position.z= 4.5;
+		    	scene.add(swtmesh);
+		    	objects.push(swtmesh);
+		    	var stmesh = new THREE.Mesh(stgeo, material1);
+		    	stmesh.position.x = 2.5;
+		    	stmesh.position.y = 0.5;
+		    	stmesh.position.z = 4.5;
+		    	scene.add(stmesh);
+		    	objects.push(stmesh);
+		    	var setmesh = new THREE.Mesh(setgeo,material2);
+		    	setmesh.position.x = 4.5;
+		    	setmesh.position.y = 0.5;
+		    	setmesh.position.z = 4.5;
+		    	scene.add(setmesh);
+		    	objects.push(setmesh);
+		    	var wtmesh = new THREE.Mesh(wtgeo, material1);
+		    	wtmesh.position.x= 0.5;
+		      	wtmesh.position.y= 2.5;  	
+		    	wtmesh.position.z = 4.5;
+		    	wtmesh.addEventListener()
+		    	scene.add(wtmesh);
+		    	objects.push(wtmesh);
+		    	var topmesh = new THREE.Mesh(topgeo, material2);
+		    	topmesh.position.x = 2.5;
+		      	topmesh.position.y= 2.5;  	
+		      	topmesh.position.z= 4.5;  	
+		    	scene.add(topmesh);
+		    	objects.push(topmesh);
+		    	var etmesh = new THREE.Mesh(etgeo,material);
+		    	etmesh.position.x = 4.5;
+		      	etmesh.position.y= 2.5;  	
+		    	etmesh.position.z = 4.5;
+		    	scene.add(etmesh);
+		    	objects.push(etmesh);
+		    	var nwtmesh = new THREE.Mesh(nwtgeo, material);
+		    	nwtmesh.position.x= 0.5;
+		    	nwtmesh.position.y= 4.5;
+		    	nwtmesh.position.z= 4.5;
+		    	scene.add(nwtmesh);
+		    	objects.push(nwtmesh);
+		    	var ntmesh = new THREE.Mesh(ntgeo, material1);
+		    	ntmesh.position.x = 2.5;
+		    	ntmesh.position.y= 4.5;
+		    	ntmesh.position.z= 4.5;
+		    	scene.add(ntmesh);
+		    	objects.push(ntmesh);
+		    	var netmesh = new THREE.Mesh(netgeo,material2);
+		    	netmesh.position.x = 4.5;
+		    	netmesh.position.y= 4.5;
+		    	netmesh.position.z= 4.5;
+		    	scene.add(netmesh);
+		    	objects.push(netmesh);
+
+/*				var geometry = new THREE.BoxGeometry( 40, 40, 40 );
+
+				for ( var i = 0; i < 5; i ++ ) {
+
+					var object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) );
+
+					object.material.ambient = object.material.color;
+
+					object.position.x = Math.random() * 1000 - 500;
+					object.position.y = Math.random() * 600 - 300;
+					object.position.z = Math.random() * 800 - 400;
+
+					object.rotation.x = Math.random() * 2 * Math.PI;
+					object.rotation.y = Math.random() * 2 * Math.PI;
+					object.rotation.z = Math.random() * 2 * Math.PI;
+
+					object.scale.x = Math.random() * 2 + 1;
+					object.scale.y = Math.random() * 2 + 1;
+					object.scale.z = Math.random() * 2 + 1;
+
+					object.castShadow = true;
+					object.receiveShadow = true;
+
+					scene.add( object );
+
+					objects.push( object );
+
+				}*/
+
+				plane = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true, wireframe: true } ) );
+				plane.visible = false;
+				scene.add( plane );
+
+				projector = new THREE.Projector();
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setClearColor( 0xf0f0f0 );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.sortObjects = false;
+
+				renderer.shadowMapEnabled = true;
+				renderer.shadowMapType = THREE.PCFShadowMap;
+
+				container.appendChild( renderer.domElement );
+
+				var info = document.createElement( 'div' );
+				info.style.position = 'absolute';
+				info.style.top = '10px';
+				info.style.width = '100%';
+				info.style.textAlign = 'center';
+				info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> webgl - draggable cubes';
+				container.appendChild( info );
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				container.appendChild( stats.domElement );
+
+				renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
+				renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
+				renderer.domElement.addEventListener( 'click', onDocumentClick, false );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+			function onDocumentClick(){
+
+			}
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function onDocumentMouseMove( event ) {
+
+				event.preventDefault();
+
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+				//
+
+				var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+				projector.unprojectVector( vector, camera );
+
+				var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+
+				if ( SELECTED ) {
+
+					var intersects = raycaster.intersectObject( plane );
+					SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+					return;
+
+				}
+
+
+				var intersects = raycaster.intersectObjects( objects );
+
+				if ( intersects.length > 0 ) {
+
+					if ( INTERSECTED != intersects[ 0 ].object ) {
+
+						if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+
+						INTERSECTED = intersects[ 0 ].object;
+						INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+
+						plane.position.copy( INTERSECTED.position );
+						plane.lookAt( camera.position );
+
+
+					}
+
+					container.style.cursor = 'pointer';
+					// INTERSECTED.material.color.setHex(0xffffff);
+
+				} else {
+
+					if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+
+					INTERSECTED = null;
+
+					container.style.cursor = 'auto';
+
+				}
+
+			}
+
+			function onDocumentMouseDown( event ) {
+
+				event.preventDefault();
+
+				var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+				projector.unprojectVector( vector, camera );
+
+				var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+				var intersects = raycaster.intersectObjects( objects );
+
+				if ( intersects.length > 0 ) {
+
+					controls.enabled = false;
+
+					SELECTED = intersects[ 0 ].object;
+
+					var intersects = raycaster.intersectObject( plane );
+					offset.copy( intersects[ 0 ].point ).sub( plane.position );
+
+					container.style.cursor = 'move';
+
+				}
+
+			}
+
+			function onDocumentMouseUp( event ) {
+
+				event.preventDefault();
+
+				controls.enabled = true;
+
+				if ( INTERSECTED ) {
+
+					plane.position.copy( INTERSECTED.position );
+
+					SELECTED = null;
+
+				}
+
+				container.style.cursor = 'auto';
+
+			}
+			var viewcube ={
+	    		top: function(){
+	    			
+	    		},
+	    		bottom: function(object){
+	    			this.object = object;
+	    			console.log(this.object.lookAt());
+	    		},
+	    		up:"up",
+	    		down:"down",
+	    		front:"front",
+	    		back:"back",
+	    		left:"left",
+	    		right:"right",
+	    		ft:"fronttop",
+	    		bt:"backtop",
+	    		lt:"lefttop",
+	    		rt:"righttop",
+	    		fb:"frontbottom",
+	    		bb:"backbottom",
+	    		lb:"leftbottom",
+	    		rb:"rightbottom",
+	    		fr:"frontright",
+	    		fl:"frontleft",
+	    		br:"backright",
+	    		bl:"backleft",
+	    		tfr:"topfrontright",
+	    		tbr:"topbackright",
+	    		tfl:"topfrontleft",
+	    		tbl:"topbackleft",
+	    		bfr:"bottomfrontright",
+	    		bbr:"bottombackright",
+	    		bfl:"bottomfrontleft",
+	    		bbl:"bottombackleft",
+			}
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				render();
+				stats.update();
+
+			}
+
+			function render() {
+
+				controls.update();
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+</html>

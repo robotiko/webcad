@@ -46,6 +46,8 @@
 
 		<script src="../build/three.js"></script>
 
+		<script src="js/controls/OrbitControls.js"></script>
+
 		<script src="js/Detector.js"></script>
 		<script src="js/libs/stats.min.js"></script>
 
@@ -58,7 +60,7 @@
 			windowHalfX = window.innerWidth / 2,
 			windowHalfY = window.innerHeight / 2,
 
-			camera, scene, renderer, material;
+			camera, scene, renderer, controls, material;
 			var group = new THREE.Object3D();
 
 			init();
@@ -73,10 +75,15 @@
 
 				camera = new THREE.PerspectiveCamera( 33, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.z = 700;
-				camera.position.x = 200;
-				camera.position.y = 200;
+				// camera.position.x = 200;
+				// camera.position.y = 200;
 
 				scene = new THREE.Scene();
+
+				controls = new THREE.OrbitControls(camera);
+				controls.center.set(0.0, 100.0, 0.0);
+				controls.userPanSpeed = 100;
+
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setSize( window.innerWidth, window.innerHeight );
@@ -135,9 +142,9 @@
 
 				material = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 1, linewidth: 3, vertexColors: THREE.VertexColors } );
 
-				// var line = new THREE.Line(geometry, material );
-				// line.position.set(0.0,0.0,0.0);
-				// scene.add( line );
+				var line = new THREE.Line(geometry, material );
+				line.position.set(0.0,0.0,0.0);
+				scene.add( line );
 
 				var ctrgeomatry = new THREE.Geometry();
 				ctrpoints = spline.getControlPointsArray();
@@ -150,8 +157,9 @@
 				var ctrline = new THREE.Line(ctrgeomatry, material);
 				ctrline.position.set(0.0,0.0,0.0);
 				scene.add(ctrline);
-
-				var particles = new THREE.PointCloud( ctrgeomatry, new THREE.PointCloudMaterial( { color: 0xff11ff, size: 20, opacity: 0.75 } ) );
+				
+				var pgeo = ctrgeomatry.clone();
+				var particles = new THREE.PointCloud( pgeo, new THREE.PointCloudMaterial( { color: 0xff11ff, size: 20, opacity: 0.75 } ) );
 				particles.position.set(0.0,0.0,0.0);
 				scene.add( particles );
 
@@ -231,7 +239,7 @@
 				// camera.position.x += ( mouseX - camera.position.x ) * .05;
 				// camera.position.y += ( - mouseY + 200 - camera.position.y ) * .05;
 
-				// camera.lookAt( scene.position );
+				camera.lookAt( scene.position );
 
 				// var time = Date.now() * 0.0005;
 
