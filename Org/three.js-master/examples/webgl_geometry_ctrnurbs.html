@@ -41,7 +41,7 @@
 			var camera, scene, controls, renderer,projector ,INTERSECTED, SELECTED,plane,planectr;
 			var particles, objects = [];
 			var nurbsControlPointsGeometry = new THREE.Geometry();
-			var nurbsControlPoints = [];
+			var nurbsControlPoints = [], nurbsCurve;
 			var nurbsGeometry = new THREE.Geometry();
 
 			var clock = new THREE.Clock();
@@ -117,7 +117,7 @@
 				}
 				projector = new THREE.Projector();
 
-				var nurbsCurve = new THREE.NURBSCurve(nurbsDegree, nurbsKnots, nurbsControlPoints);
+				nurbsCurve = new THREE.NURBSCurve(nurbsDegree, nurbsKnots, nurbsControlPoints);
 
 				nurbsGeometry.vertices = nurbsCurve.getPoints(200);
 				var nurbsMaterial = new THREE.LineBasicMaterial( { linewidth: 10, color: 0x333333, transparent: true } );
@@ -152,46 +152,46 @@
 
 				// NURBS surface
 
-				var nsControlPoints = [
-					[
-						new THREE.Vector4 ( -200, -200, 100, 1 ),
-						new THREE.Vector4 ( -200, -100, -200, 1 ),
-						new THREE.Vector4 ( -200, 100, 250, 1 ),
-						new THREE.Vector4 ( -200, 200, -100, 1 )
-					],
-					[
-						new THREE.Vector4 ( 0, -200, 0, 1 ),
-						new THREE.Vector4 ( 0, -100, -100, 5 ),
-						new THREE.Vector4 ( 0, 100, 150, 5 ),
-						new THREE.Vector4 ( 0, 200, 0, 1 )
-					],
-					[
-						new THREE.Vector4 ( 200, -200, -100, 1 ),
-						new THREE.Vector4 ( 200, -100, 200, 1 ),
-						new THREE.Vector4 ( 200, 100, -250, 1 ),
-						new THREE.Vector4 ( 200, 200, 100, 1 )
-					]
-				];
-				var degree1 = 2;
-				var degree2 = 3;
-				var knots1 = [0, 0, 0, 1, 1, 1];
-				var knots2 = [0, 0, 0, 0, 1, 1, 1, 1];
-				var nurbsSurface = new THREE.NURBSSurface(degree1, degree2, knots1, knots2, nsControlPoints);
+				// var nsControlPoints = [
+				// 	[
+				// 		new THREE.Vector4 ( -200, -200, 100, 1 ),
+				// 		new THREE.Vector4 ( -200, -100, -200, 1 ),
+				// 		new THREE.Vector4 ( -200, 100, 250, 1 ),
+				// 		new THREE.Vector4 ( -200, 200, -100, 1 )
+				// 	],
+				// 	[
+				// 		new THREE.Vector4 ( 0, -200, 0, 1 ),
+				// 		new THREE.Vector4 ( 0, -100, -100, 5 ),
+				// 		new THREE.Vector4 ( 0, 100, 150, 5 ),
+				// 		new THREE.Vector4 ( 0, 200, 0, 1 )
+				// 	],
+				// 	[
+				// 		new THREE.Vector4 ( 200, -200, -100, 1 ),
+				// 		new THREE.Vector4 ( 200, -100, 200, 1 ),
+				// 		new THREE.Vector4 ( 200, 100, -250, 1 ),
+				// 		new THREE.Vector4 ( 200, 200, 100, 1 )
+				// 	]
+				// ];
+				// var degree1 = 2;
+				// var degree2 = 3;
+				// var knots1 = [0, 0, 0, 1, 1, 1];
+				// var knots2 = [0, 0, 0, 0, 1, 1, 1, 1];
+				// var nurbsSurface = new THREE.NURBSSurface(degree1, degree2, knots1, knots2, nsControlPoints);
 
-				var map = THREE.ImageUtils.loadTexture( 'textures/UV_Grid_Sm.jpg' );
-				map.wrapS = map.wrapT = THREE.RepeatWrapping;
-				map.anisotropy = 16;
+				// var map = THREE.ImageUtils.loadTexture( 'textures/UV_Grid_Sm.jpg' );
+				// map.wrapS = map.wrapT = THREE.RepeatWrapping;
+				// map.anisotropy = 16;
 
-				getSurfacePoint = function(u, v) {
-					return nurbsSurface.getPoint(u, v);
-				};
+				// getSurfacePoint = function(u, v) {
+				// 	return nurbsSurface.getPoint(u, v);
+				// };
 
-				var geometry = new THREE.ParametricGeometry( getSurfacePoint, 20, 20 );
-				var material = new THREE.MeshLambertMaterial( { map: map, side: THREE.DoubleSide } );
-				var object = new THREE.Mesh( geometry, material );
-				object.position.set( - 200, 100, 0 );
-				object.scale.multiplyScalar( 1 );
-				group.add( object );
+				// var geometry = new THREE.ParametricGeometry( getSurfacePoint, 20, 20 );
+				// var material = new THREE.MeshLambertMaterial( { map: map, side: THREE.DoubleSide } );
+				// var object = new THREE.Mesh( geometry, material );
+				// object.position.set( - 200, 100, 0 );
+				// object.scale.multiplyScalar( 1 );
+				// group.add( object );
 
 				//
 
@@ -249,14 +249,17 @@
 
 					var intersects = raycaster.intersectObject( planectr );
 					SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
-					nurbsControlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y,SELECTED.position.z,1);
-					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x;
-					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y;
+					nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x - 200,SELECTED.position.y + 50,SELECTED.position.z,1);
+					nurbsGeometry.vertices = nurbsCurve.getPoints(200);
+					nurbsGeometry.verticesNeedUpdate = true;
+					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x - 200;
+					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y + 50;
 					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+					nurbsControlPointsGeometry.verticesNeedUpdate = true;
 					render();
-					console.log(SELECTED);
-					console.log(nurbsControlPoints[parseInt(SELECTED.name)]);
-					console.log(nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)]);
+					// console.log(SELECTED);
+					// console.log(nurbsControlPoints[parseInt(SELECTED.name)]);
+					// console.log(nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)]);
 					return;
 
 				}
