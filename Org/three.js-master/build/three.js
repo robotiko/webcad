@@ -31128,20 +31128,22 @@ THREE.ShapeGeometry.prototype.addShape = function ( shape, options ) {
 // phiStart - the starting radian
 // phiLength - the radian (0 to 2*PI) range of the lathed section
 //    2*pi is a closed lathe, less than 2PI is a portion.
-THREE.LatheGeometry = function ( points, segments, phiStart, phiLength ) {
+THREE.LatheGeometry = function ( pointsarg, segments, phiStart, phiLength ) {
 
 	THREE.Geometry.call( this );
+	this.controlPoints = pointsarg;
+	var points = this.controlPoints;
 
-	segments = segments || 12;
-	phiStart = phiStart || 0;
-	phiLength = phiLength || 2 * Math.PI;
+	this.segments = segments || 12;
+	this.phiStart = phiStart || 0;
+	this.phiLength = phiLength || 2 * Math.PI;
 
 	var inversePointLength = 1.0 / ( points.length - 1 );
-	var inverseSegments = 1.0 / segments;
+	var inverseSegments = 1.0 / this.segments;
 
-	for ( var i = 0, il = segments; i <= il; i ++ ) {
+	for ( var i = 0, il = this.segments; i <= il; i ++ ) {
 
-		var phi = phiStart + i * inverseSegments * phiLength;
+		var phi = this.phiStart + i * inverseSegments * this.phiLength;
 
 		var c = Math.cos( phi ),
 			s = Math.sin( phi );
@@ -31160,7 +31162,39 @@ THREE.LatheGeometry = function ( points, segments, phiStart, phiLength ) {
 
 		}
 
-	}
+	}	
+	// this.controlPoints = pointsarg;
+	// var points = this.controlPoints;
+
+	// segments = segments || 12;
+	// phiStart = phiStart || 0;
+	// phiLength = phiLength || 2 * Math.PI;
+
+	// var inversePointLength = 1.0 / ( points.length - 1 );
+	// var inverseSegments = 1.0 / segments;
+
+	// for ( var i = 0, il = segments; i <= il; i ++ ) {
+
+	// 	var phi = phiStart + i * inverseSegments * phiLength;
+
+	// 	var c = Math.cos( phi ),
+	// 		s = Math.sin( phi );
+
+	// 	for ( var j = 0, jl = points.length; j < jl; j ++ ) {
+
+	// 		var pt = points[ j ];
+
+	// 		var vertex = new THREE.Vector3();
+
+	// 		vertex.x = c * pt.x - s * pt.y;
+	// 		vertex.y = s * pt.x + c * pt.y;
+	// 		vertex.z = pt.z;
+
+	// 		this.vertices.push( vertex );
+
+	// 	}
+
+	// }
 
 	var np = points.length;
 
@@ -31211,6 +31245,87 @@ THREE.LatheGeometry = function ( points, segments, phiStart, phiLength ) {
 };
 
 THREE.LatheGeometry.prototype = Object.create( THREE.Geometry.prototype );
+
+THREE.LatheGeometry.prototype.update = function(pointsarg, segments, phiStart, phiLength){
+	this.controlPoints = pointsarg || this.controlPoints;
+	var points = this.controlPoints;
+
+	this.segments = segments || this.segments;
+	this.phiStart = phiStart || this.phiStart;
+	this.phiLength = phiLength || this.phiLength;
+
+	var inversePointLength = 1.0 / ( points.length - 1 );
+	var inverseSegments = 1.0 / this.segments;
+
+	for ( var i = 0, il = this.segments; i <= il; i ++ ) {
+
+		var phi = this.phiStart + i * inverseSegments * this.phiLength;
+
+		var c = Math.cos( phi ),
+			s = Math.sin( phi );
+
+		for ( var j = 0, jl = points.length; j < jl; j ++ ) {
+
+			var pt = points[ j ];
+
+			var vertex = new THREE.Vector3();
+
+			vertex.x = c * pt.x - s * pt.y;
+			vertex.y = s * pt.x + c * pt.y;
+			vertex.z = pt.z;
+
+			this.vertices.push( vertex );
+
+		}
+
+	}
+	
+	var np = points.length;
+
+	for ( var i = 0, il = segments; i < il; i ++ ) {
+
+		for ( var j = 0, jl = points.length - 1; j < jl; j ++ ) {
+
+			var base = j + np * i;
+			var a = base;
+			var b = base + np;
+			var c = base + 1 + np;
+			var d = base + 1;
+
+			var u0 = i * inverseSegments;
+			var v0 = j * inversePointLength;
+			var u1 = u0 + inverseSegments;
+			var v1 = v0 + inversePointLength;
+
+			this.faces.push( new THREE.Face3( a, b, d ) );
+
+			this.faceVertexUvs[ 0 ].push( [
+
+				new THREE.Vector2( u0, v0 ),
+				new THREE.Vector2( u1, v0 ),
+				new THREE.Vector2( u0, v1 )
+
+			] );
+
+			this.faces.push( new THREE.Face3( b, c, d ) );
+
+			this.faceVertexUvs[ 0 ].push( [
+
+				new THREE.Vector2( u1, v0 ),
+				new THREE.Vector2( u1, v1 ),
+				new THREE.Vector2( u0, v1 )
+
+			] );
+
+
+		}
+
+	}
+
+	this.mergeVertices();
+	this.computeFaceNormals();
+	this.computeVertexNormals();
+}
 
 // File:src/extras/geometries/PlaneGeometry.js
 
