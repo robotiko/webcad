@@ -31154,9 +31154,13 @@ THREE.LatheGeometry = function ( pointsarg, segments, phiStart, phiLength ) {
 
 			var vertex = new THREE.Vector3();
 
-			vertex.x = c * pt.x - s * pt.y;
-			vertex.y = s * pt.x + c * pt.y;
-			vertex.z = pt.z;
+			// vertex.x = c * pt.x - s * pt.y;
+			// vertex.y = s * pt.x + c * pt.y;
+			// vertex.z = pt.z;
+
+			vertex.x = c * pt.x - s * pt.z;
+			vertex.y = pt.y;
+			vertex.z = s * pt.x + c * pt.z;
 
 			this.vertices.push( vertex );
 
@@ -31257,7 +31261,6 @@ THREE.LatheGeometry.prototype.update = function(pointsarg, segmentsarg, phiStart
 	var inversePointLength = 1.0 / ( points.length - 1 );
 	var inverseSegments = 1.0 / this.segments;
 	
-	this.vertices.shift();
 	
 	for ( var i = 0, il = this.segments; i <= il; i ++ ) {
 
@@ -31272,9 +31275,14 @@ THREE.LatheGeometry.prototype.update = function(pointsarg, segmentsarg, phiStart
 
 			var vertex = new THREE.Vector3();
 
-			vertex.x = c * pt.x - s * pt.y;
-			vertex.y = s * pt.x + c * pt.y;
-			vertex.z = pt.z;
+			// vertex.x = c * pt.x - s * pt.y;
+			// vertex.y = s * pt.x + c * pt.y;
+			// vertex.z = pt.z;
+			this.vertices.shift();
+
+			vertex.x = c * pt.x - s * pt.z;
+			vertex.y = pt.y;
+			vertex.z = s * pt.x + c * pt.z;
 			this.vertices.push(vertex);
 
 		}
