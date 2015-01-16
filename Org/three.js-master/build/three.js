@@ -31196,16 +31196,16 @@ THREE.LatheGeometry = function ( pointsarg, segments, phiStart, phiLength ) {
 
 	// }
 
-	var np = points.length;
+	this.np = points.length;
 
 	for ( var i = 0, il = segments; i < il; i ++ ) {
 
 		for ( var j = 0, jl = points.length - 1; j < jl; j ++ ) {
 
-			var base = j + np * i;
+			var base = j + this.np * i;
 			var a = base;
-			var b = base + np;
-			var c = base + 1 + np;
+			var b = base + this.np;
+			var c = base + 1 + this.np;
 			var d = base + 1;
 
 			var u0 = i * inverseSegments;
@@ -31246,17 +31246,19 @@ THREE.LatheGeometry = function ( pointsarg, segments, phiStart, phiLength ) {
 
 THREE.LatheGeometry.prototype = Object.create( THREE.Geometry.prototype );
 
-THREE.LatheGeometry.prototype.update = function(pointsarg, segments, phiStart, phiLength){
+THREE.LatheGeometry.prototype.update = function(pointsarg, segmentsarg, phiStartarg, phiLengtharg){
 	this.controlPoints = ( pointsarg !== undefined ) ? pointsarg : this.controlPoints;
 	var points = this.controlPoints;
 
-	this.segments = ( segments !== undefined ) ? segments : this.segments;
-	this.phiStart = ( phiStart !== undefined ) ? phiStart : this.phiStart;
-	this.phiLength = ( phiLength !== undefined ) ? phiLength : this.phiLength;
+	this.segments = ( segmentsarg !== undefined ) ? segmentsarg : this.segments;
+	this.phiStart = ( phiStartarg !== undefined ) ? phiStartarg : this.phiStart;
+	this.phiLength = ( phiLengtharg !== undefined ) ? phiLengtharg : this.phiLength;
 
 	var inversePointLength = 1.0 / ( points.length - 1 );
 	var inverseSegments = 1.0 / this.segments;
-
+	
+	this.vertices.shift();
+	
 	for ( var i = 0, il = this.segments; i <= il; i ++ ) {
 
 		var phi = this.phiStart + i * inverseSegments * this.phiLength;
@@ -31273,12 +31275,57 @@ THREE.LatheGeometry.prototype.update = function(pointsarg, segments, phiStart, p
 			vertex.x = c * pt.x - s * pt.y;
 			vertex.y = s * pt.x + c * pt.y;
 			vertex.z = pt.z;
-			// console.log(i*j+j);
-			this.vertices[i*j+j].set( vertex );
+			this.vertices.push(vertex);
 
 		}
 
 	}
+
+	// this.np = points.length;
+	// this.faces.shift();
+	// for ( var i = 0, il = this.segments; i < il; i ++ ) {
+
+	// 	for ( var j = 0, jl = points.length - 1; j < jl; j ++ ) {
+
+	// 		var base = j + this.np * i;
+	// 		var a = base;
+	// 		var b = base + this.np;
+	// 		var c = base + 1 + this.np;
+	// 		var d = base + 1;
+
+	// 		var u0 = i * inverseSegments;
+	// 		var v0 = j * inversePointLength;
+	// 		var u1 = u0 + inverseSegments;
+	// 		var v1 = v0 + inversePointLength;
+
+	// 		this.faces.push( new THREE.Face3( a, b, d ) );
+
+	// 		this.faceVertexUvs[ 0 ].push( [
+
+	// 			new THREE.Vector2( u0, v0 ),
+	// 			new THREE.Vector2( u1, v0 ),
+	// 			new THREE.Vector2( u0, v1 )
+
+	// 		] );
+
+	// 		this.faces.push( new THREE.Face3( b, c, d ) );
+
+	// 		this.faceVertexUvs[ 0 ].push( [
+
+	// 			new THREE.Vector2( u1, v0 ),
+	// 			new THREE.Vector2( u1, v1 ),
+	// 			new THREE.Vector2( u0, v1 )
+
+	// 		] );
+
+
+	// 	}
+
+	// }
+
+	// this.mergeVertices();
+	// this.computeFaceNormals();
+	// this.computeVertexNormals();
 
 }
 

@@ -16,18 +16,25 @@
 	<body>
 
 		<script src="../build/three.js"></script>
-
+		<script src="js/curves/NURBSCurve.js"></script>
+		<script src="js/curves/NURBSSurface.js"></script>
+		<script src="js/curves/NURBSUtils.js"></script>
 		<script src="js/Detector.js"></script>
 		<script src="js/libs/stats.min.js"></script>
+		<script src="js/controls/TrackballControls.js"></script>
 
 		<script>
 
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 			var container, stats;
+			var mouse = new THREE.Vector2();
+			var clock = new THREE.Clock();
 
-			var camera, scene, renderer, object, points = [];
-
+			var camera, scene, renderer, object, points = [] ,planectr, controls,projector,INTERSECTED, SELECTED;
+			var nurbsControlPointsGeometry = new THREE.Geometry();
+			var nurbsControlPoints = [], nurbsCurve, objects = [];
+			var nurbsGeometry = new THREE.Geometry();
 			init();
 			animate();
 
@@ -39,9 +46,23 @@
 				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
 				camera.position.y = 400;
 
+
+				controls = new THREE.TrackballControls( camera );
+				controls.rotateSpeed = 1.0;
+				controls.zoomSpeed = 1.2;
+				controls.panSpeed = 0.8;
+				controls.noZoom = false;
+				controls.noPan = false;
+				controls.staticMoving = true;
+				controls.dynamicDampingFactor = 0.3;
+
 				scene = new THREE.Scene();
 
 				var light;
+
+				var group = new THREE.Object3D();
+				// group.position.y = 50;
+				scene.add( group );
 
 				scene.add( new THREE.AmbientLight( 0x404040 ) );
 
@@ -52,6 +73,7 @@
 				var map = THREE.ImageUtils.loadTexture( 'textures/UV_Grid_Sm.jpg' );
 				map.wrapS = map.wrapT = THREE.RepeatWrapping;
 				map.anisotropy = 16;
+				projector = new THREE.Projector();
 
 				var material = new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, map: map, side: THREE.DoubleSide } );
 
@@ -98,16 +120,60 @@
 				//
 
 				// var ;
+				var nurbsKnots = [];
+				var nurbsDegree = 3;
 
-				for ( var i = 0; i < 50; i ++ ) {
+				for ( var i = 0; i <= nurbsDegree; i ++ ) {
+
+					nurbsKnots.push( 0 );
+
+				}
+
+				for ( var i = 0 ,j = 50; i < j; i ++ ) {
 
 					points.push( new THREE.Vector3( Math.sin( i * 0.2 ) * Math.sin( i * 0.1 ) * 15 + 50, 0, ( i - 5 ) * 2 ) );
+					nurbsControlPoints.push( new THREE.Vector4(points[i].x,points[i].y,points[i].z,1));
 
 				}
 
 				object = new THREE.Mesh( new THREE.LatheGeometry( points, 20 ), material );
 				object.position.set( 0, 0, 0 );
 				scene.add( object );
+
+
+				// nurbsCurve = new THREE.NURBSCurve(nurbsDegree, nurbsKnots, nurbsControlPoints);
+
+				// nurbsGeometry.vertices = nurbsCurve.getPoints(20);
+				// var nurbsMaterial = new THREE.LineBasicMaterial( { linewidth: 10, color: 0x333333, transparent: true } );
+
+				// var nurbsLine = new THREE.Line( nurbsGeometry, nurbsMaterial );
+				// // nurbsLine.position.set( 200, -100, 0 );
+				// group.add( nurbsLine );
+
+				
+				nurbsControlPointsGeometry.vertices = nurbsControlPoints;
+				var nurbsControlPointsMaterial = new THREE.LineBasicMaterial( { linewidth: 10, color: 0x33ee33, opacity: 0.75, transparent: true } );
+				var nurbsControlPointsLine = new THREE.Line( nurbsControlPointsGeometry, nurbsControlPointsMaterial );
+				nurbsControlPointsLine.position.set( 0,0,0 );
+				scene.add( nurbsControlPointsLine );
+
+				// var pgeo = nurbsControlPointsGeometry.clone();
+				// for (var i = nurbsControlPoints.length - 1; i >= 0; i--) {
+				// 		var planegeometry = new THREE.PlaneGeometry( 50, 50 );
+				// 		var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+				// 		plane = new THREE.Mesh( planegeometry, planematerial );
+				// 		plane.position.x = nurbsControlPoints[i].x;
+				// 		plane.position.y = nurbsControlPoints[i].y;
+				// 		plane.position.z = nurbsControlPoints[i].z;
+				// 		plane.name = i;
+				// 		scene.add(plane);
+				// 		objects.push( plane );
+				// };
+
+				// planectr = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true, wireframe: true } ) );
+				// planectr.visible = true;
+				// scene.add( planectr );
+
 
 				// object = new THREE.Mesh( new THREE.TorusGeometry( 50, 20, 20, 20 ), material );
 				// object.position.set( -200, 0, -200 );
@@ -141,6 +207,9 @@
 
 				window.addEventListener( 'resize', onWindowResize, false );
 
+				window.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				window.addEventListener( 'mousedown', onDocumentMouseDown, false );
+				window.addEventListener( 'mouseup', onDocumentMouseUp, false );
 			}
 
 			function onWindowResize() {
@@ -149,10 +218,119 @@
 				camera.updateProjectionMatrix();
 
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				controls.handleResize();
 
 			}
 
 			//
+
+			function onDocumentMouseMove( event ) {
+
+				event.preventDefault();
+
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+				//
+
+				var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+				projector.unprojectVector( vector, camera );
+
+				var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+
+				if ( SELECTED ) {
+
+					var intersects = raycaster.intersectObject( planectr );
+					SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+					nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x - 200,SELECTED.position.y + 50,SELECTED.position.z,1);
+					nurbsGeometry.vertices = nurbsCurve.getPoints(200);
+					nurbsGeometry.verticesNeedUpdate = true;
+					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x - 200;
+					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y + 50;
+					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+					nurbsControlPointsGeometry.verticesNeedUpdate = true;
+					render();
+					// console.log(SELECTED);
+					// console.log(nurbsControlPoints[parseInt(SELECTED.name)]);
+					// console.log(nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)]);
+					return;
+
+				}
+
+
+				var intersects = raycaster.intersectObjects( objects );
+
+				if ( intersects.length > 0 ) {
+
+					if ( INTERSECTED != intersects[ 0 ].object ) {
+
+						if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+
+						INTERSECTED = intersects[ 0 ].object;
+						INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+
+						planectr.position.copy( INTERSECTED.position );
+						planectr.lookAt( camera.position );
+
+					}
+					intersects[ 0 ].object.material.color.setHex(0x80ff80);
+					container.style.cursor = 'pointer';
+
+				} else {
+
+					if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+
+					INTERSECTED = null;
+
+					container.style.cursor = 'auto';
+
+				}
+
+			}
+
+			function onDocumentMouseDown( event ) {
+
+				event.preventDefault();
+
+				var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+				projector.unprojectVector( vector, camera );
+
+				var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+				var intersects = raycaster.intersectObjects( objects );
+
+				if ( intersects.length > 0 ) {
+
+					controls.enabled = false;
+
+					SELECTED = intersects[ 0 ].object;
+
+					var intersects = raycaster.intersectObject( planectr );
+					offset.copy( intersects[ 0 ].point ).sub( planectr.position );
+
+					container.style.cursor = 'move';
+
+				}
+
+			}
+
+			function onDocumentMouseUp( event ) {
+
+				event.preventDefault();
+
+				controls.enabled = true;
+
+				if ( INTERSECTED ) {
+
+					planectr.position.copy( INTERSECTED.position );
+					SELECTED = null;
+
+				}
+
+				container.style.cursor = 'auto';
+
+			}
 
 			function animate() {
 
@@ -165,21 +343,22 @@
 
 			function render() {
 
-				var timer = Date.now() * 0.0001;
+				// var timer = Date.now() * 0.0001;
 
-				camera.position.x = Math.cos( timer ) * 800;
-				camera.position.z = Math.sin( timer ) * 800;
+				// camera.position.x = Math.cos( timer ) * 800;
+				// camera.position.z = Math.sin( timer ) * 800;
 
 				camera.lookAt( scene.position );
 
-				for ( var i = 0, l = scene.children.length; i < l; i ++ ) {
+				// for ( var i = 0, l = scene.children.length; i < l; i ++ ) {
 
-					var object = scene.children[ i ];
+				// 	var object = scene.children[ i ];
 
-					object.rotation.x = timer * 5;
-					object.rotation.y = timer * 2.5;
+				// 	object.rotation.x = timer * 5;
+				// 	object.rotation.y = timer * 2.5;
 
-				}
+				// }
+				controls.update( clock.getDelta() );
 
 				renderer.render( scene, camera );
 
