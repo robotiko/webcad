@@ -31134,9 +31134,9 @@ THREE.LatheGeometry = function ( pointsarg, segments, phiStart, phiLength ) {
 	this.controlPoints = pointsarg;
 	var points = this.controlPoints;
 
-	this.segments = segments || 12;
-	this.phiStart = phiStart || 0;
-	this.phiLength = phiLength || 2 * Math.PI;
+	this.segments = ( segments !== undefined ) ? segments : 12;
+	this.phiStart = ( phiStart !== undefined ) ? phiStart : 0;
+	this.phiLength = ( phiLength !== undefined ) ? phiLength : 2 * Math.PI;
 
 	var inversePointLength = 1.0 / ( points.length - 1 );
 	var inverseSegments = 1.0 / this.segments;
@@ -31247,12 +31247,12 @@ THREE.LatheGeometry = function ( pointsarg, segments, phiStart, phiLength ) {
 THREE.LatheGeometry.prototype = Object.create( THREE.Geometry.prototype );
 
 THREE.LatheGeometry.prototype.update = function(pointsarg, segments, phiStart, phiLength){
-	this.controlPoints = pointsarg || this.controlPoints;
+	this.controlPoints = ( pointsarg !== undefined ) ? pointsarg : this.controlPoints;
 	var points = this.controlPoints;
 
-	this.segments = segments || this.segments;
-	this.phiStart = phiStart || this.phiStart;
-	this.phiLength = phiLength || this.phiLength;
+	this.segments = ( segments !== undefined ) ? segments : this.segments;
+	this.phiStart = ( phiStart !== undefined ) ? phiStart : this.phiStart;
+	this.phiLength = ( phiLength !== undefined ) ? phiLength : this.phiLength;
 
 	var inversePointLength = 1.0 / ( points.length - 1 );
 	var inverseSegments = 1.0 / this.segments;
@@ -31273,58 +31273,13 @@ THREE.LatheGeometry.prototype.update = function(pointsarg, segments, phiStart, p
 			vertex.x = c * pt.x - s * pt.y;
 			vertex.y = s * pt.x + c * pt.y;
 			vertex.z = pt.z;
-
-			this.vertices.push( vertex );
-
-		}
-
-	}
-	
-	var np = points.length;
-
-	for ( var i = 0, il = segments; i < il; i ++ ) {
-
-		for ( var j = 0, jl = points.length - 1; j < jl; j ++ ) {
-
-			var base = j + np * i;
-			var a = base;
-			var b = base + np;
-			var c = base + 1 + np;
-			var d = base + 1;
-
-			var u0 = i * inverseSegments;
-			var v0 = j * inversePointLength;
-			var u1 = u0 + inverseSegments;
-			var v1 = v0 + inversePointLength;
-
-			this.faces.push( new THREE.Face3( a, b, d ) );
-
-			this.faceVertexUvs[ 0 ].push( [
-
-				new THREE.Vector2( u0, v0 ),
-				new THREE.Vector2( u1, v0 ),
-				new THREE.Vector2( u0, v1 )
-
-			] );
-
-			this.faces.push( new THREE.Face3( b, c, d ) );
-
-			this.faceVertexUvs[ 0 ].push( [
-
-				new THREE.Vector2( u1, v0 ),
-				new THREE.Vector2( u1, v1 ),
-				new THREE.Vector2( u0, v1 )
-
-			] );
-
+			// console.log(i*j+j);
+			this.vertices[i*j+j].set( vertex );
 
 		}
 
 	}
 
-	this.mergeVertices();
-	this.computeFaceNormals();
-	this.computeVertexNormals();
 }
 
 // File:src/extras/geometries/PlaneGeometry.js
