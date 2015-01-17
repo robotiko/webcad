@@ -41,7 +41,7 @@
 			var camera, scene, controls, renderer,projector ,INTERSECTED, SELECTED,plane,planectr;
 			var particles, objects = [];
 			var nurbsControlPointsGeometry = new THREE.Geometry();
-			var nurbsControlPoints = [], nurbsCurve,surefacegeo,sureface;
+			var nurbsControlPoints = [], nurbsCurve,surefacegeo,sureface,surefacegeoHalf,surefaceHalf;
 			var nurbsGeometry = new THREE.Geometry();
 
 			var clock = new THREE.Clock();
@@ -66,7 +66,7 @@
 				container.appendChild( info );
 
 				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 2000 );
-				camera.position.set(  0, 0, 300 );
+				camera.position.set(  0, 0, -300 );
 				camera.lookAt( new THREE.Vector3(0, 0, 0) );
 
 
@@ -137,7 +137,7 @@
 				var nurbsMaterial = new THREE.LineBasicMaterial( { linewidth: 10, color: 0x333333, transparent: true } );
 
 				var nurbsLine = new THREE.Line( nurbsGeometry, nurbsMaterial );
-				nurbsLine.position.set( 0, 0, 0 );
+				nurbsLine.position.set( -100, 0, 0 );
 				group.add( nurbsLine );
 
 				
@@ -152,7 +152,7 @@
 						var planegeometry = new THREE.PlaneGeometry( 5, 5 );
 						var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
 						plane = new THREE.Mesh( planegeometry, planematerial );
-						plane.position.x = nurbsControlPoints[i].x;
+						plane.position.x = nurbsControlPoints[i].x - 100;
 						plane.position.y = nurbsControlPoints[i].y - 100;
 						plane.position.z = nurbsControlPoints[i].z;
 						plane.name = i;
@@ -169,9 +169,13 @@
 				map.anisotropy = 16;
 				var points = nurbsGeometry.vertices;
 				var material = new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, map: map, side: THREE.DoubleSide } );
+				surefacegeoHalf =  new THREE.LatheGeometry( points, 20,0, Math.PI  );
+				surefaceHalf = new THREE.Mesh(surefacegeoHalf, material );
+				surefaceHalf.position.set( -100, 0, 0 );
+				group.add( surefaceHalf );
 				surefacegeo =  new THREE.LatheGeometry( points, 20 );
 				sureface = new THREE.Mesh(surefacegeo, material );
-				sureface.position.set( 0, 0, 0 );
+				sureface.position.set( 100, 0, 0 );
 				group.add( sureface );
 
 
@@ -228,19 +232,19 @@
 				if ( SELECTED ) {
 
 					var intersects = raycaster.intersectObject( planectr );
-					sureface.material.opacity = 0.25;
-					sureface.material.needsUpdate = true;
 					// SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
 					SELECTED.position.x = intersects[ 0 ].point.sub( offset ).x;
 					SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
 					// nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
-					nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,0,1);
+					nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x + 100,SELECTED.position.y + 100,0,1);
 					nurbsGeometry.vertices = nurbsCurve.getPoints(200);
 					nurbsGeometry.verticesNeedUpdate = true;
 					// surefacegeo.vertices  = nurbsGeometry.vertices;
+					surefacegeoHalf.update(nurbsGeometry.vertices);
+					surefacegeoHalf.verticesNeedUpdate = true;
 					surefacegeo.update(nurbsGeometry.vertices);
 					surefacegeo.verticesNeedUpdate = true;
-					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x;
+					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x + 100;
 					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y + 100;
 					// nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
 					nurbsControlPointsGeometry.verticesNeedUpdate = true;
