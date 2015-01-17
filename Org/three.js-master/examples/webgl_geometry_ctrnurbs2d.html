@@ -41,7 +41,7 @@
 			var camera, scene, controls, renderer,projector ,INTERSECTED, SELECTED,plane,planectr;
 			var particles, objects = [];
 			var nurbsControlPointsGeometry = new THREE.Geometry();
-			var nurbsControlPoints = [], nurbsCurve,surefacegeo;
+			var nurbsControlPoints = [], nurbsCurve,surefacegeo,sureface;
 			var nurbsGeometry = new THREE.Geometry();
 
 			var clock = new THREE.Clock();
@@ -170,7 +170,7 @@
 				var points = nurbsGeometry.vertices;
 				var material = new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, map: map, side: THREE.DoubleSide } );
 				surefacegeo =  new THREE.LatheGeometry( points, 20 );
-				var sureface = new THREE.Mesh(surefacegeo, material );
+				sureface = new THREE.Mesh(surefacegeo, material );
 				sureface.position.set( 0, 0, 0 );
 				group.add( sureface );
 
@@ -228,6 +228,8 @@
 				if ( SELECTED ) {
 
 					var intersects = raycaster.intersectObject( planectr );
+					sureface.material.opacity = 0.25;
+					sureface.material.needsUpdate = true;
 					// SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
 					SELECTED.position.x = intersects[ 0 ].point.sub( offset ).x;
 					SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
