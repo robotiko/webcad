@@ -31282,6 +31282,11 @@ THREE.LatheGeometry.prototype.update = function(pointsarg, segmentsarg, phiStart
 
 			vertex.x = c * pt.x - s * pt.z;
 			vertex.y = pt.y;
+			// if(j%3!=1){
+			// 	vertex.y = pt.y+3;
+			// }else{
+			// 	vertex.y = pt.y-3;
+			// }
 			vertex.z = s * pt.x + c * pt.z;
 			this.vertices.push(vertex);
 

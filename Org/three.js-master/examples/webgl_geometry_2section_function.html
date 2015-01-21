@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+	<!-- based on webgl_geometry_shapes.html and webgl_geometries2.html -->
+	<head>
+		<title>three.js webgl - Nurbs曲线旋转生成曲面,即时调整更新实例</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #f0f0f0;
+				margin: 0px;
+				overflow: hidden;
+			}
+			#info {
+				position: absolute;
+				top: 0px;
+				width: 100%;
+				padding: 5px;
+				text-align:center;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="debug" style="position:absolute; left:100px"></canvas>
+
+		<div id="info"><a href="http://threejs.org" target="_blank">three.js</a> - Nurbs曲线旋转生成曲面,即时调整更新实例</div>
+
+		<script src="../build/three.js"></script>
+		<script src="js/curves/NURBSCurve.js"></script>
+		<script src="js/curves/NURBSSurface.js"></script>
+		<script src="js/curves/NURBSUtils.js"></script>
+		<script src="js/libs/stats.min.js"></script>
+		<script src="js/controls/TrackballControls.js"></script>
+
+
+		<script>
+
+			var container, stats;
+
+			var camera, scene, controls, renderer,projector ,INTERSECTED, SELECTED,plane,planectr;
+			var particles, objects = [];
+			var nurbsControlPointsGeometry = new THREE.Geometry();
+			var nurbsControlPoints = [], nurbsCurve,surefacegeo,sureface,surefacegeoHalf,surefaceHalf, nurbsControlPointf = [];
+			var nurbsGeometry = new THREE.Geometry();
+
+			var clock = new THREE.Clock();
+			var mouse = new THREE.Vector2(),
+			offset = new THREE.Vector3();
+
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				var info = document.createElement( 'div' );
+				info.style.position = 'absolute';
+				info.style.top = '30px';
+				info.style.width = '100%';
+				info.style.textAlign = 'center';
+				info.innerHTML = '拖动黄色节点,调整曲面母线';
+				container.appendChild( info );
+
+				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 2000 );
+				camera.position.set(  0, 0, 350 );
+				camera.lookAt( new THREE.Vector3(0, 0, 0) );
+
+
+				controls = new THREE.TrackballControls( camera );
+				controls.rotateSpeed = 1.0;
+				controls.zoomSpeed = 1.2;
+				controls.panSpeed = 0.8;
+				controls.noZoom = false;
+				controls.noPan = false;
+				controls.staticMoving = true;
+				controls.dynamicDampingFactor = 0.3;
+
+				scene = new THREE.Scene();
+				scene.add( new THREE.AmbientLight( 0x808080 ) );
+
+				var light = new THREE.DirectionalLight( 0xffffff, 1 );
+				light.position.set( 1, 1, 1 );
+				scene.add( light );
+
+				group = new THREE.Object3D();
+				group.position.y = -100;
+				scene.add( group );
+
+				// NURBS curve
+
+				var nurbsKnots = [];
+				var nurbsDegree = 3;
+
+				for ( var i = 0; i <= nurbsDegree; i ++ ) {
+
+					nurbsKnots.push( 0 );
+
+				}
+
+				for ( var i = 0, j = 22; i < j; i ++ ) {
+					if (i%3 != 1) {
+						nurbsControlPointf.push(
+							new THREE.Vector4(
+								0,
+								i * 10,
+								20,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);	
+
+					} else{
+
+						nurbsControlPointf.push(
+							new THREE.Vector4(
+								0,
+								i * 10,
+								10,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);					
+					};
+				}
+
+				for ( var i = 0, j = 22; i < j; i ++ ) {
+					if (i%3 != 1) {
+						nurbsControlPoints.push(
+							new THREE.Vector4(
+								15,
+								i * 10,
+								0,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);	
+
+					} else{
+
+						nurbsControlPoints.push(
+							new THREE.Vector4(
+								25,
+								i * 10,
+								0,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);					
+					};
+
+					var knot = ( i + 1 ) / ( j - nurbsDegree );
+					nurbsKnots.push( THREE.Math.clamp( knot, 0, 1 ) );
+
+				}
+				console.log(funclerp(nurbsControlPoints,nurbsControlPointf,5));
+				projector = new THREE.Projector();
+
+				nurbsCurve = new THREE.NURBSCurve(nurbsDegree, nurbsKnots, nurbsControlPoints);
+
+				nurbsGeometry.vertices = nurbsCurve.getPoints(200);
+				var nurbsMaterial = new THREE.LineBasicMaterial( { linewidth: 10, color: 0xffffff, opacity: 0.75, transparent: false } );
+
+				var nurbsLine = new THREE.Line( nurbsGeometry, nurbsMaterial );
+				nurbsLine.position.set( -100, 0, 0 );
+				group.add( nurbsLine );
+
+				
+				nurbsControlPointsGeometry.vertices = nurbsCurve.controlPoints;
+				var nurbsControlPointsMaterial = new THREE.LineBasicMaterial( { linewidth: 5, color: 0x33ff33, opacity: 0.75, transparent: true } );
+				var nurbsControlPointsLine = new THREE.Line( nurbsControlPointsGeometry, nurbsControlPointsMaterial );
+				nurbsControlPointsLine.position.copy( nurbsLine.position );
+				group.add( nurbsControlPointsLine );
+
+				var pgeo = nurbsControlPointsGeometry.clone();
+				for (var i = nurbsControlPoints.length - 1; i >= 0; i--) {
+						var planegeometry = new THREE.PlaneGeometry( 5, 5 );
+						var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+						plane = new THREE.Mesh( planegeometry, planematerial );
+						plane.position.x = nurbsControlPoints[i].x - 100;
+						plane.position.y = nurbsControlPoints[i].y - 100;
+						plane.position.z = nurbsControlPoints[i].z;
+						plane.name = i;
+						scene.add(plane);
+						objects.push( plane );
+				};
+
+				// planectr = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.75, transparent: true } ) );
+				planectr = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.75, transparent: true, wireframe: true } ) );
+				planectr.visible = false;
+				scene.add( planectr );
+
+				var map = THREE.ImageUtils.loadTexture( 'textures/UV_Grid_Sm.jpg' );
+				map.wrapS = map.wrapT = THREE.RepeatWrapping;
+				map.anisotropy = 16;
+				var points = nurbsGeometry.vertices;
+				var material = new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, map: map, side: THREE.DoubleSide } );
+				// var material = new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, map: map, side: THREE.DoubleSide ,wireframe: true} );
+				surefacegeoHalf =  new THREE.LatheGeometry( points, 20,Math.PI / 4 ,  Math.PI * 1.749);
+				surefaceHalf = new THREE.Mesh(surefacegeoHalf, material );
+				surefaceHalf.position.set( -100, 0, 0 );
+				group.add( surefaceHalf );
+				surefacegeo =  new THREE.LatheGeometry( points, 20 );
+				sureface = new THREE.Mesh(surefacegeo, material );
+				sureface.position.set( 100, 0, 0 );
+				group.add( sureface );
+
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setClearColor( 0xf0f0f0 );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				container.appendChild( renderer.domElement );
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				container.appendChild( stats.domElement );
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+				document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function funclerp(ps1,ps2,step) {
+				var lerpPoints = [];
+				var tmpPoints = ps1;
+				if (ps1.length != ps2.length) {
+					console.log("verteces number was not same.");
+				};
+
+				for (var i = ps1.length - 1; i >= 0; i--) {
+					lerpPoints.push(ps1[i]);
+					for (var j = 2;j <= step-1; j++) {
+						lerpPoints.push(tmpPoints[i].lerp(ps2[i],1/step*j));
+					};
+					lerpPoints.push(ps2[i]);
+				};
+				return lerpPoints;
+			};
+
+			// function computeFace(lerpPoints,segments){
+			// 	var inversePointLength = 1.0 / ( points.length - 1 );
+			// 	var inverseSegments = 1.0 / this.segments;
+
+			// 	this.np = lerpPoints.length;
+
+			// 	for ( var i = 0, il = segments; i < il; i ++ ) {
+
+			// 		for ( var j = 0, jl = lerpPoints.length - 1; j < jl; j ++ ) {
+
+			// 			var base = j + this.np * i;
+			// 			var a = base;
+			// 			var b = base + this.np;
+			// 			var c = base + 1 + this.np;
+			// 			var d = base + 1;
+
+			// 			var u0 = i * inverseSegments;
+			// 			var v0 = j * inversePointLength;
+			// 			var u1 = u0 + inverseSegments;
+			// 			var v1 = v0 + inversePointLength;
+
+			// 			this.faces.push( new THREE.Face3( a, b, d ) );
+
+			// 			this.faceVertexUvs[ 0 ].push( [
+
+			// 				new THREE.Vector2( u0, v0 ),
+			// 				new THREE.Vector2( u1, v0 ),
+			// 				new THREE.Vector2( u0, v1 )
+
+			// 			] );
+
+			// 			this.faces.push( new THREE.Face3( b, c, d ) );
+
+			// 			this.faceVertexUvs[ 0 ].push( [
+
+			// 				new THREE.Vector2( u1, v0 ),
+			// 				new THREE.Vector2( u1, v1 ),
+			// 				new THREE.Vector2( u0, v1 )
+
+			// 			] );
+
+
+			// 		}
+
+			// 	}
+
+			// 	this.mergeVertices();
+			// 	this.computeFaceNormals();
+			// 	this.computeVertexNormals();
+			// };
+
+			function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				controls.handleResize();
+
+			}
+
+
+			function onDocumentMouseMove( event ) {
+
+				event.preventDefault();
+
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+				//
+
+				var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+				projector.unprojectVector( vector, camera );
+
+				var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+
+				if ( SELECTED ) {
+
+					var intersects = raycaster.intersectObject( planectr );
+					// SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+					SELECTED.position.x = intersects[ 0 ].point.sub( offset ).x;
+					SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
+					// nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
+					nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x + 100,SELECTED.position.y + 100,0,1);
+					nurbsGeometry.vertices = nurbsCurve.getPoints(200);
+					nurbsGeometry.verticesNeedUpdate = true;
+					// surefacegeo.vertices  = nurbsGeometry.vertices;
+					surefacegeoHalf.update(nurbsGeometry.vertices);
+					surefacegeoHalf.verticesNeedUpdate = true;
+					surefacegeo.update(nurbsGeometry.vertices);
+					surefacegeo.verticesNeedUpdate = true;
+					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x + 100;
+					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y + 100;
+					// nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+					nurbsControlPointsGeometry.verticesNeedUpdate = true;
+					render();
+					// console.log(SELECTED);
+					// console.log(nurbsControlPoints[parseInt(SELECTED.name)]);
+					// console.log(nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)]);
+					return;
+
+				}
+
+
+				var intersects = raycaster.intersectObjects( objects );
+
+				if ( intersects.length > 0 ) {
+
+					if ( INTERSECTED != intersects[ 0 ].object ) {
+
+						if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+
+						INTERSECTED = intersects[ 0 ].object;
+						INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+
+						planectr.position.copy( INTERSECTED.position );
+						planectr.lookAt( camera.position );
+
+					}
+					intersects[ 0 ].object.material.color.setHex(0x80ff80);
+					container.style.cursor = 'pointer';
+
+				} else {
+
+					if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+
+					INTERSECTED = null;
+
+					container.style.cursor = 'auto';
+
+				}
+
+			}
+
+			function onDocumentMouseDown( event ) {
+
+				event.preventDefault();
+
+				var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+				projector.unprojectVector( vector, camera );
+
+				var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+				var intersects = raycaster.intersectObjects( objects );
+
+				if ( intersects.length > 0 ) {
+
+					controls.enabled = false;
+
+					SELECTED = intersects[ 0 ].object;
+
+					var intersects = raycaster.intersectObject( planectr );
+					offset.copy( intersects[ 0 ].point ).sub( planectr.position );
+
+					container.style.cursor = 'move';
+
+				}
+
+			}
+
+			function onDocumentMouseUp( event ) {
+
+				event.preventDefault();
+
+				controls.enabled = true;
+
+				if ( INTERSECTED ) {
+
+					planectr.position.copy( INTERSECTED.position );
+					SELECTED = null;
+
+				}
+
+				container.style.cursor = 'auto';
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				render();
+				stats.update();
+
+			}
+
+			function render() {
+
+				controls.update( clock.getDelta() );
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+</html>
