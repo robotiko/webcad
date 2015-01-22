@@ -38,11 +38,12 @@
 
 			var container, stats;
 
-			var camera, scene, controls, renderer,projector ,INTERSECTED, SELECTED,plane,planectr;
+			var camera, scene, controls, renderer,projector ,INTERSECTED, SELECTED,plane,planectr,nubrsgeo;
 			var particles, objects = [];
 			var nurbsControlPointsGeometry = new THREE.Geometry();
-			var nurbsControlPoints = [], nurbsCurve,surefacegeo,sureface,surefacegeoHalf,surefaceHalf, nurbsControlPointf = [];
+			var nurbsControlPoints = [], nurbsCurve,nurbsCurvef, surefacegeo,sureface,surefacegeoHalf,surefaceHalf, nurbsControlPointf = [];
 			var nurbsGeometry = new THREE.Geometry();
+			var nurbsGeometryf = new THREE.Geometry();
 
 			var clock = new THREE.Clock();
 			var mouse = new THREE.Vector2(),
@@ -152,12 +153,13 @@
 					nurbsKnots.push( THREE.Math.clamp( knot, 0, 1 ) );
 
 				}
-				console.log(funclerp(nurbsControlPoints,nurbsControlPointf,5));
 				projector = new THREE.Projector();
 
 				nurbsCurve = new THREE.NURBSCurve(nurbsDegree, nurbsKnots, nurbsControlPoints);
+				nurbsCurvef = new THREE.NURBSCurve(nurbsDegree, nurbsKnots, nurbsControlPointf);
 
 				nurbsGeometry.vertices = nurbsCurve.getPoints(200);
+				nurbsGeometryf.vertices = nurbsCurvef.getPoints(200);
 				var nurbsMaterial = new THREE.LineBasicMaterial( { linewidth: 10, color: 0xffffff, opacity: 0.75, transparent: false } );
 
 				var nurbsLine = new THREE.Line( nurbsGeometry, nurbsMaterial );
@@ -204,6 +206,10 @@
 				sureface.position.set( 100, 0, 0 );
 				group.add( sureface );
 
+				nubrsgeo = new THREE.NurbsGeometry(funclerp(nurbsGeometry.vertices,nurbsGeometryf.vertices,5),5);
+				var nubrsmesh = new THREE.Mesh(nubrsgeo, material);
+				nubrsmesh.position.set(0,0,0);
+				scene.add(nubrsmesh);
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setClearColor( 0xf0f0f0 );
@@ -243,56 +249,6 @@
 				return lerpPoints;
 			};
 
-			// function computeFace(lerpPoints,segments){
-			// 	var inversePointLength = 1.0 / ( points.length - 1 );
-			// 	var inverseSegments = 1.0 / this.segments;
-
-			// 	this.np = lerpPoints.length;
-
-			// 	for ( var i = 0, il = segments; i < il; i ++ ) {
-
-			// 		for ( var j = 0, jl = lerpPoints.length - 1; j < jl; j ++ ) {
-
-			// 			var base = j + this.np * i;
-			// 			var a = base;
-			// 			var b = base + this.np;
-			// 			var c = base + 1 + this.np;
-			// 			var d = base + 1;
-
-			// 			var u0 = i * inverseSegments;
-			// 			var v0 = j * inversePointLength;
-			// 			var u1 = u0 + inverseSegments;
-			// 			var v1 = v0 + inversePointLength;
-
-			// 			this.faces.push( new THREE.Face3( a, b, d ) );
-
-			// 			this.faceVertexUvs[ 0 ].push( [
-
-			// 				new THREE.Vector2( u0, v0 ),
-			// 				new THREE.Vector2( u1, v0 ),
-			// 				new THREE.Vector2( u0, v1 )
-
-			// 			] );
-
-			// 			this.faces.push( new THREE.Face3( b, c, d ) );
-
-			// 			this.faceVertexUvs[ 0 ].push( [
-
-			// 				new THREE.Vector2( u1, v0 ),
-			// 				new THREE.Vector2( u1, v1 ),
-			// 				new THREE.Vector2( u0, v1 )
-
-			// 			] );
-
-
-			// 		}
-
-			// 	}
-
-			// 	this.mergeVertices();
-			// 	this.computeFaceNormals();
-			// 	this.computeVertexNormals();
-			// };
 
 			function onWindowResize() {
 
