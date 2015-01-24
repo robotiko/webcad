@@ -31347,15 +31347,15 @@ THREE.NurbsGeometry = function(lerpPoints,segments){
 
 	// this.vertices = lerpPoints;
 
-	var inversePointLength = 1.0 / ( lerpPoints.length - 1 );
+	var inversePointLength = 1.0 / (( lerpPoints.length / segments) - 1);
 	var inverseSegments = 1.0 / this.segments;
 
 	// for ( var i = 0, il = this.segments; i <= il; i ++ ) {
 
-		// var phi = this.phiStart + i * inverseSegments * this.phiLength;
+	// 	var phi = this.phiStart + i * inverseSegments * this.phiLength;
 
-		// var c = Math.cos( phi ),
-		// 	s = Math.sin( phi );
+	// 	var c = Math.cos( phi ),
+	// 		s = Math.sin( phi );
 
 		for ( var j = 0, jl = lerpPoints.length; j < jl; j ++ ) {
 
@@ -31387,12 +31387,12 @@ THREE.NurbsGeometry = function(lerpPoints,segments){
 
 	for ( var i = 0, il = segments; i < il; i ++ ) {
 
-		for ( var j = 0, jl = lerpPoints.length - 1; j < jl; j ++ ) {
+		for ( var j = 0, jl = ((lerpPoints.length / segments) - 1); j < jl; j ++ ) {
 
-			var base = j + this.np * i;
+			var base = j;
 			var a = base;
-			var b = base + this.np;
-			var c = base + 1 + this.np;
+			var b = base + (this.np / segments);
+			var c = base + 1 + (this.np / segments);
 			var d = base + 1;
 
 			var u0 = i * inverseSegments;
