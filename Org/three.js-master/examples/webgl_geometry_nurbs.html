@@ -161,7 +161,7 @@
 				};
 
 				var geometry = new THREE.ParametricGeometry( getSurfacePoint, 20, 20 );
-				var material = new THREE.MeshLambertMaterial( { map: map, side: THREE.DoubleSide } );
+				var material = new THREE.MeshLambertMaterial( { map: map, side: THREE.DoubleSide  ,wireframe:true} );
 				var object = new THREE.Mesh( geometry, material );
 				object.position.set( - 200, 100, 0 );
 				object.scale.multiplyScalar( 1 );

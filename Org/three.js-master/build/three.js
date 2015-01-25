@@ -31347,12 +31347,12 @@ THREE.NurbsGeometry = function(lerpPoints,segments){
 
 	// this.vertices = lerpPoints;
 
-	var inversePointLength = 1.0 / (( lerpPoints.length / segments) - 1);
-	var inverseSegments = 1.0 / this.segments;
+	var inversePointLength = 1.0 / (( lerpPoints.length / segments * 4) - 1);
+	var inverseSegments = 1.0 / segments * 4;
 
 	// for ( var i = 0, il = this.segments; i <= il; i ++ ) {
 
-	// 	var phi = this.phiStart + i * inverseSegments * this.phiLength;
+	// 	var phi = 0 + i * inverseSegments * Math.PI / 2;
 
 	// 	var c = Math.cos( phi ),
 	// 		s = Math.sin( phi );
@@ -31383,45 +31383,52 @@ THREE.NurbsGeometry = function(lerpPoints,segments){
 		}
 
 	// }
-	this.np = lerpPoints.length;
+	this.np = this.vertices.length;
 
-	for ( var i = 0, il = segments; i < il; i ++ ) {
+	for ( var j = 0, jl = this.vertices.length - segments * 4; j < jl; j += segments * 4  ) {
+		// if((j % segments < 2) && (j % segments > 0)){
+			var base = j;		
+			for(var i = 0; i < segments * 4; i++){
+				if (i != segments * 4 - 1){
+					var a = base + i;
+					var b = base + segments * 4 + i;
+					var c = base + segments * 4 + i + 1;
+					var d = base + 1 + i;
 
-		for ( var j = 0, jl = ((lerpPoints.length / segments) - 1); j < jl; j ++ ) {
-
-			var base = j;
-			var a = base;
-			var b = base + (this.np / segments);
-			var c = base + 1 + (this.np / segments);
-			var d = base + 1;
-
-			var u0 = i * inverseSegments;
-			var v0 = j * inversePointLength;
-			var u1 = u0 + inverseSegments;
-			var v1 = v0 + inversePointLength;
-
-			this.faces.push( new THREE.Face3( a, b, d ) );
-
-			this.faceVertexUvs[ 0 ].push( [
-
-				new THREE.Vector2( u0, v0 ),
-				new THREE.Vector2( u1, v0 ),
-				new THREE.Vector2( u0, v1 )
-
-			] );
-
-			this.faces.push( new THREE.Face3( b, c, d ) );
-
-			this.faceVertexUvs[ 0 ].push( [
-
-				new THREE.Vector2( u1, v0 ),
-				new THREE.Vector2( u1, v1 ),
-				new THREE.Vector2( u0, v1 )
-
-			] );
+				}else{
+					var a = base + i;
+					var b = base + segments * 4 + i;
+					var c = base + 1 + i;
+					var d = base;					
+				}
 
 
-		}
+				var u0 = j * inverseSegments;
+				var v0 = i * inversePointLength;
+				var u1 = u0 + inverseSegments;
+				var v1 = v0 + inversePointLength;
+
+				this.faces.push( new THREE.Face3( a, b, c ) );
+
+				this.faceVertexUvs[ 0 ].push( [
+
+					new THREE.Vector2( u1, v1 ),
+					new THREE.Vector2( u1, v0 ),
+					new THREE.Vector2( u0, v0 )
+
+				] );
+
+				this.faces.push( new THREE.Face3( a, c, d ) );
+
+				this.faceVertexUvs[ 0 ].push( [
+
+					new THREE.Vector2( u1, v1 ),
+					new THREE.Vector2( u0, v0 ),
+					new THREE.Vector2( u0, v1 )
+
+				] );
+			}
+		// }
 
 	}
 

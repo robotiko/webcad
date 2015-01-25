@@ -41,9 +41,11 @@
 			var camera, scene, controls, renderer,projector ,INTERSECTED, SELECTED,plane,planectr,nubrsgeo;
 			var particles, objects = [];
 			var nurbsControlPointsGeometry = new THREE.Geometry();
-			var nurbsControlPoints = [], nurbsCurve,nurbsCurvef, surefacegeo,sureface,surefacegeoHalf,surefaceHalf, nurbsControlPointf = [];
+			var nurbsControlPoints = [], nurbsCurve,nurbsCurvef, surefacegeo,sureface,surefacegeoHalf,surefaceHalf, nurbsControlPointf = [], nurbsControlPointb = [], nurbsControlPointn = [],nubrsmesh;
 			var nurbsGeometry = new THREE.Geometry();
 			var nurbsGeometryf = new THREE.Geometry();
+			var nurbsGeometrye = new THREE.Geometry();
+			var nurbsGeometryn = new THREE.Geometry();
 
 			var clock = new THREE.Clock();
 			var mouse = new THREE.Vector2(),
@@ -52,6 +54,8 @@
 
 			init();
 			animate();
+
+
 
 			function init() {
 
@@ -88,12 +92,12 @@
 				scene.add( light );
 
 				group = new THREE.Object3D();
-				group.position.y = -100;
+				// group.position.y = -100;
 				scene.add( group );
 
 				// NURBS curve
 
-				var nurbsKnots = [];
+				var nurbsKnots = [],nurbsKnots1 = [],nurbsKnots2 = [],nurbsKnots3 = [];
 				var nurbsDegree = 3;
 
 				for ( var i = 0; i <= nurbsDegree; i ++ ) {
@@ -102,7 +106,25 @@
 
 				}
 
-				for ( var i = 0, j = 30; i < j; i ++ ) {
+				for ( var i = 0; i <= nurbsDegree; i ++ ) {
+
+					nurbsKnots1.push( 0 );
+
+				}
+
+				for ( var i = 0; i <= nurbsDegree; i ++ ) {
+
+					nurbsKnots2.push( 0 );
+
+				}
+
+				for ( var i = 0; i <= nurbsDegree; i ++ ) {
+
+					nurbsKnots3.push( 0 );
+
+				}
+
+				for ( var i = 0, j = 20; i < j; i ++ ) {
 					if (i%3 != 1) {
 						nurbsControlPointf.push(
 							new THREE.Vector4(
@@ -124,9 +146,12 @@
 							)
 						);					
 					};
+
+					var knot1 = ( i + 1 ) / ( j - nurbsDegree );
+					nurbsKnots1.push( THREE.Math.clamp( knot1, 0, 1 ) );					
 				}
 
-				for ( var i = 0, j = 30; i < j; i ++ ) {
+				for ( var i = 0, j = 20; i < j; i ++ ) {
 					if (i%3 != 1) {
 						nurbsControlPoints.push(
 							new THREE.Vector4(
@@ -153,22 +178,89 @@
 					nurbsKnots.push( THREE.Math.clamp( knot, 0, 1 ) );
 
 				}
+
+				for ( var i = 0, j = 20; i < j; i ++ ) {
+					if (i%3 != 1) {
+						nurbsControlPointb.push(
+							new THREE.Vector4(
+								0,
+								i * 10,
+								-20,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);	
+
+					} else{
+
+						nurbsControlPointb.push(
+							new THREE.Vector4(
+								0,
+								i * 10,
+								-10,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);					
+					};
+
+					var knot2 = ( i + 1 ) / ( j - nurbsDegree );
+					nurbsKnots2.push( THREE.Math.clamp( knot2, 0, 1 ) );					
+				}
+
+				for ( var i = 0, j = 20; i < j; i ++ ) {
+					if (i%3 != 1) {
+						nurbsControlPointn.push(
+							new THREE.Vector4(
+								-15,
+								i * 10,
+								0,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);	
+
+					} else{
+
+						nurbsControlPointn.push(
+							new THREE.Vector4(
+								-25,
+								i * 10,
+								0,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);					
+					};
+
+					var knot3 = ( i + 1 ) / ( j - nurbsDegree );
+					nurbsKnots3.push( THREE.Math.clamp( knot3, 0, 1 ) );
+
+				}
 				projector = new THREE.Projector();
 
 				nurbsCurve = new THREE.NURBSCurve(nurbsDegree, nurbsKnots, nurbsControlPoints);
-				nurbsCurvef = new THREE.NURBSCurve(nurbsDegree, nurbsKnots, nurbsControlPointf);
+				nurbsCurvef = new THREE.NURBSCurve(nurbsDegree, nurbsKnots1, nurbsControlPointf);
+				nurbsCurvee = new THREE.NURBSCurve(nurbsDegree, nurbsKnots2, nurbsControlPointb);
+				nurbsCurven = new THREE.NURBSCurve(nurbsDegree, nurbsKnots3, nurbsControlPointn);
 
 				nurbsGeometry.vertices = nurbsCurve.getPoints(200);
 				nurbsGeometryf.vertices = nurbsCurvef.getPoints(200);
-				var nurbsMaterial = new THREE.LineBasicMaterial( { linewidth: 10, color: 0xffffff, opacity: 0.75, transparent: false } );
+				nurbsGeometrye.vertices = nurbsCurvee.getPoints(200);
+				nurbsGeometryn.vertices = nurbsCurven.getPoints(200);
+				var nurbsMaterial = new THREE.LineBasicMaterial( { linewidth: 10, color: 0xff2222, opacity: 0.75, transparent: false } );
 
 				var nurbsLine = new THREE.Line( nurbsGeometry, nurbsMaterial );
-				nurbsLine.position.set( -100, 0, 0 );
+				nurbsLine.position.set( 0, 0, 0 );
 				group.add( nurbsLine );
 
 				var nurbsLinef = new THREE.Line( nurbsGeometryf, nurbsMaterial );
-				nurbsLinef.position.set( -100, 0, 0 );
+				nurbsLinef.position.set( 0, 0, 0 );
 				group.add( nurbsLinef );
+				
+				var nurbsLinee = new THREE.Line( nurbsGeometrye, nurbsMaterial );
+				nurbsLine.position.set( 0, 0, 0 );
+				group.add( nurbsLinee );
+
+				var nurbsLinen = new THREE.Line( nurbsGeometryn, nurbsMaterial );
+				nurbsLinef.position.set( 0, 0, 0 );
+				group.add( nurbsLinen );
 				
 				nurbsControlPointsGeometry.vertices = nurbsCurve.controlPoints;
 				var nurbsControlPointsMaterial = new THREE.LineBasicMaterial( { linewidth: 5, color: 0x33ff33, opacity: 0.75, transparent: true } );
@@ -181,8 +273,8 @@
 						var planegeometry = new THREE.PlaneGeometry( 5, 5 );
 						var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
 						plane = new THREE.Mesh( planegeometry, planematerial );
-						plane.position.x = nurbsControlPoints[i].x - 100;
-						plane.position.y = nurbsControlPoints[i].y - 100;
+						plane.position.x = nurbsControlPoints[i].x;
+						plane.position.y = nurbsControlPoints[i].y;
 						plane.position.z = nurbsControlPoints[i].z;
 						plane.name = i;
 						scene.add(plane);
@@ -197,10 +289,13 @@
 				var map = THREE.ImageUtils.loadTexture( 'textures/UV_Grid_Sm.jpg' );
 				map.wrapS = map.wrapT = THREE.RepeatWrapping;
 				map.anisotropy = 16;
-				var points = nurbsGeometry.vertices;
-				var pointf = nurbsGeometryf.vertices;
+				var points = nurbsGeometry.vertices.slice(0);
+				var pointf = nurbsGeometryf.vertices.slice(0);
+				var pointe = nurbsGeometrye.vertices.slice(0);
+				var pointn = nurbsGeometryn.vertices.slice(0);
+				var pointsArray= new Array(points,pointf,pointn,pointe);
 				// var material = new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, map: map, side: THREE.DoubleSide } );
-				var material = new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, map: map, side: THREE.DoubleSide ,wireframe: true} );
+				var material = new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, color: 0x000000, side: THREE.DoubleSide ,wireframe: true, linewidth:3} );
 				// surefacegeoHalf =  new THREE.LatheGeometry( points, 20,Math.PI / 4 ,  Math.PI * 1.749);
 				// surefaceHalf = new THREE.Mesh(surefacegeoHalf, material );
 				// surefaceHalf.position.set( -100, 0, 0 );
@@ -209,9 +304,11 @@
 				// sureface = new THREE.Mesh(surefacegeo, material );
 				// sureface.position.set( 100, 0, 0 );
 				// group.add( sureface );
-				var nubrspoints = funclerp(points,pointf,5);
+
+				// var nubrspoints = funclerp(pointf,points,5);
+				var nubrspoints = funclerpArray(pointsArray,5);
 				nubrsgeo = new THREE.NurbsGeometry(nubrspoints,5);
-				var nubrsmesh = new THREE.Mesh(nubrsgeo, material);
+				nubrsmesh = new THREE.Mesh(nubrsgeo, material);
 				nubrsmesh.position.set(0,0,0);
 				scene.add(nubrsmesh);
 
@@ -244,16 +341,55 @@
 					console.log("verteces number was not same.");
 				};
 
-				for (var i = 0, ij = ps1.length - 1; i <=ij ; i++) {
-					lerpPoints.push(ps1[i]);
-					for (var j = 2, js = step-1;j <= js; j++) {
+				for (var i = 0, ij = ps1.length - 1; i <= ij ; i++) {
+					for (var j = 0, js = step;j <= js; j++) {
 						lerpPoints.push(tmpPoints[i].lerp(tmpPointf[i],0.2*j).clone());
 					};
-					lerpPoints.push(ps2[i]);
 				};
 				return lerpPoints;
-			};
+			}
 
+			function funclerpArray(pointsArray,step) {
+				var lerpPoints = [];
+
+				if (pointsArray[0].length != pointsArray[1].length || pointsArray[2].length != pointsArray[3].length || pointsArray[3].length != pointsArray[0].length) {
+					console.log("verteces number was not same.");
+				};
+
+				for (var i = 0, ij = pointsArray[0].length - 1; i <= ij ; i++) {
+					for(var k = 0; k < pointsArray.length; k++){
+						if(k < 3){
+							var tmppoint1 = pointsArray[k][i], tmppoint2 = pointsArray[k + 1 ][i];
+							for (var j = 0, js = step;j < js; j++) {
+								var offpoint = new THREE.Vector4(), totalPoint = new THREE.Vector4();
+								offpoint.subVectors(tmppoint1,tmppoint2);
+								offpoint.w = 1;
+								offpoint.divideScalar(step);
+								offpoint.multiplyScalar(j);
+								totalPoint.subVectors(tmppoint1,offpoint);
+								totalPoint.w = 1;
+
+								lerpPoints.push(totalPoint);
+							};
+						}else{
+							var tmppoint1 = pointsArray[k][i], tmppoint2 = pointsArray[0][i];
+							for (var j = 0, js = step;j < js; j++) {
+								var offpoint = new THREE.Vector4(), totalPoint = new THREE.Vector4();
+								offpoint.subVectors(tmppoint1,tmppoint2);
+								offpoint.w = 1;
+								offpoint.divideScalar(step);
+								offpoint.multiplyScalar(j);
+								totalPoint.subVectors(tmppoint1,offpoint);
+								totalPoint.w = 1;
+								lerpPoints.push(totalPoint);
+							};
+
+						};
+					};	
+				};
+
+				return lerpPoints;
+			}
 
 			function onWindowResize() {
 
@@ -291,7 +427,7 @@
 					SELECTED.position.x = intersects[ 0 ].point.sub( offset ).x;
 					SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
 					// nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
-					nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x + 100,SELECTED.position.y + 100,0,1);
+					nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x ,SELECTED.position.y,0,1);
 					nurbsGeometry.vertices = nurbsCurve.getPoints(200);
 					nurbsGeometry.verticesNeedUpdate = true;
 					// surefacegeo.vertices  = nurbsGeometry.vertices;
@@ -299,8 +435,8 @@
 					// surefacegeoHalf.verticesNeedUpdate = true;
 					// surefacegeo.update(nurbsGeometry.vertices);
 					// surefacegeo.verticesNeedUpdate = true;
-					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x + 100;
-					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y + 100;
+					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x;
+					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y;
 					// nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
 					nurbsControlPointsGeometry.verticesNeedUpdate = true;
 					render();
