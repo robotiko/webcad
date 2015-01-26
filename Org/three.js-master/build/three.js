@@ -26613,6 +26613,12 @@ THREE.Curve.prototype.getPoint = function ( t ) {
 
 };
 
+THREE.Curve.prototype.getFlowerPoint = function ( t , force) {
+
+	console.log( "Warning, getPoint() not implemented!" );
+	return null;
+
+};
 // Get point at relative position in curve according to arc length
 // - u [0 .. 1]
 
@@ -26641,6 +26647,27 @@ THREE.Curve.prototype.getPoints = function ( divisions ) {
 
 };
 
+
+THREE.Curve.prototype.getFlowerPoints = function ( divisions ) {
+
+	if ( ! divisions ) divisions = 5;
+
+	var d, pts = [];
+
+	for ( d = 0; d <= divisions; d ++ ) {
+		var force =true;
+		if (d % 2 == 0) {
+			force = true;
+		}else{
+			force = false;
+		}
+		pts.push( this.getFlowerPoint( d / divisions , force) );
+
+	}
+
+	return pts;
+
+};
 // Get sequence of points using getPointAt( u )
 
 THREE.Curve.prototype.getSpacedPoints = function ( divisions ) {
@@ -28758,6 +28785,7 @@ THREE.EllipseCurve.prototype.getPoint = function ( t ) {
 	return new THREE.Vector2( tx, ty );
 
 };
+
 /**************************************************************
  *	Ellipse flower curve 
  **************************************************************/
@@ -28797,7 +28825,32 @@ THREE.EllipseFlowerCurve.prototype.getPoint = function ( t ) {
 
 	}
 
-	if (t % 2 == 0){
+	var tx = this.aX + this.xRadius * Math.cos( angle );
+	var ty = this.aY + this.yRadius * Math.sin( angle );
+
+	return new THREE.Vector2( tx, ty );
+
+};
+
+THREE.EllipseFlowerCurve.prototype.getFlowerPoint = function ( t, force) {
+
+	var angle;
+	var deltaAngle = this.aEndAngle - this.aStartAngle;
+
+	if ( deltaAngle < 0 ) deltaAngle += Math.PI * 2;
+	if ( deltaAngle > Math.PI * 2 ) deltaAngle -= Math.PI * 2;
+
+	if ( this.aClockwise === true ) {
+
+		angle = this.aEndAngle + ( 1 - t ) * ( Math.PI * 2 - deltaAngle );
+
+	} else {
+
+		angle = this.aStartAngle + t * deltaAngle;
+
+	}
+
+	if ( force ){
 		var tx = this.aX + this.xRadius * Math.cos( angle ) * 1.1;
 		var ty = this.aY + this.yRadius * Math.sin( angle ) * 1.1;
 
