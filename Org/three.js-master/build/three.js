@@ -28758,6 +28758,58 @@ THREE.EllipseCurve.prototype.getPoint = function ( t ) {
 	return new THREE.Vector2( tx, ty );
 
 };
+/**************************************************************
+ *	Ellipse flower curve 
+ **************************************************************/
+
+THREE.EllipseFlowerCurve = function ( aX, aY, xRadius, yRadius, aStartAngle, aEndAngle, aClockwise ) {
+
+	this.aX = aX;
+	this.aY = aY;
+
+	this.xRadius = xRadius;
+	this.yRadius = yRadius;
+
+	this.aStartAngle = aStartAngle;
+	this.aEndAngle = aEndAngle;
+
+	this.aClockwise = aClockwise;
+
+};
+
+THREE.EllipseFlowerCurve.prototype = Object.create( THREE.Curve.prototype );
+
+THREE.EllipseFlowerCurve.prototype.getPoint = function ( t ) {
+
+	var angle;
+	var deltaAngle = this.aEndAngle - this.aStartAngle;
+
+	if ( deltaAngle < 0 ) deltaAngle += Math.PI * 2;
+	if ( deltaAngle > Math.PI * 2 ) deltaAngle -= Math.PI * 2;
+
+	if ( this.aClockwise === true ) {
+
+		angle = this.aEndAngle + ( 1 - t ) * ( Math.PI * 2 - deltaAngle );
+
+	} else {
+
+		angle = this.aStartAngle + t * deltaAngle;
+
+	}
+
+	if (t % 2 == 0){
+		var tx = this.aX + this.xRadius * Math.cos( angle ) * 1.1;
+		var ty = this.aY + this.yRadius * Math.sin( angle ) * 1.1;
+
+	}else{
+		var tx = this.aX + this.xRadius * Math.cos( angle ) * 0.9;
+		var ty = this.aY + this.yRadius * Math.sin( angle ) * 0.9;
+
+	}
+
+	return new THREE.Vector2( tx, ty );
+
+};
 
 // File:src/extras/curves/ArcCurve.js
 
@@ -31347,8 +31399,8 @@ THREE.NurbsGeometry = function(lerpPoints,segments){
 
 	// this.vertices = lerpPoints;
 
-	var inversePointLength = 1.0 / (( lerpPoints.length / segments * 4) - 1);
-	var inverseSegments = 1.0 / segments * 4;
+	var inversePointLength = 1.0 / ( lerpPoints.length / segments / 4);
+	var inverseSegments = 1.0 / (segments * 4);
 
 	// for ( var i = 0, il = this.segments; i <= il; i ++ ) {
 
@@ -31403,18 +31455,18 @@ THREE.NurbsGeometry = function(lerpPoints,segments){
 				}
 
 
-				var u0 = j * inverseSegments;
-				var v0 = i * inversePointLength;
-				var u1 = u0 + inverseSegments;
+				var u0 = a * inverseSegments;
+				var v0 = a * inversePointLength;
+				var u1 = u0 - inverseSegments;
 				var v1 = v0 + inversePointLength;
 
 				this.faces.push( new THREE.Face3( a, b, c ) );
 
 				this.faceVertexUvs[ 0 ].push( [
 
-					new THREE.Vector2( u1, v1 ),
-					new THREE.Vector2( u1, v0 ),
-					new THREE.Vector2( u0, v0 )
+					new THREE.Vector2( u0, v0 ),
+					new THREE.Vector2( u0, v1 ),
+					new THREE.Vector2( u1, v1 )
 
 				] );
 
@@ -31422,9 +31474,9 @@ THREE.NurbsGeometry = function(lerpPoints,segments){
 
 				this.faceVertexUvs[ 0 ].push( [
 
-					new THREE.Vector2( u1, v1 ),
 					new THREE.Vector2( u0, v0 ),
-					new THREE.Vector2( u0, v1 )
+					new THREE.Vector2( u1, v1 ),
+					new THREE.Vector2( u1, v0 )
 
 				] );
 			}

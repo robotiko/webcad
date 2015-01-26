@@ -41,6 +41,9 @@
 			var camera, scene, controls, renderer,projector ,INTERSECTED, SELECTED,plane,planectr,nubrsgeo;
 			var particles, objects = [];
 			var nurbsControlPointsGeometry = new THREE.Geometry();
+			var nurbsControlPointsGeometryf = new THREE.Geometry();
+			var nurbsControlPointsGeometrye = new THREE.Geometry();
+			var nurbsControlPointsGeometryn = new THREE.Geometry();
 			var nurbsControlPoints = [], nurbsCurve,nurbsCurvef, surefacegeo,sureface,surefacegeoHalf,surefaceHalf, nurbsControlPointf = [], nurbsControlPointb = [], nurbsControlPointn = [],nubrsmesh;
 			var nurbsGeometry = new THREE.Geometry();
 			var nurbsGeometryf = new THREE.Geometry();
@@ -71,8 +74,8 @@
 				container.appendChild( info );
 
 				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 2000 );
-				camera.position.set(  0, 0, 350 );
-				camera.lookAt( new THREE.Vector3(0, 0, 0) );
+				camera.position.set(  0, 200, 350 );
+				// camera.lookAt( new THREE.Vector3(0, 0, 0) );
 
 
 				controls = new THREE.TrackballControls( camera );
@@ -88,8 +91,12 @@
 				scene.add( new THREE.AmbientLight( 0x808080 ) );
 
 				var light = new THREE.DirectionalLight( 0xffffff, 1 );
-				light.position.set( 1, 1, 1 );
+				light.position.set( 50, 50, 3 );
 				scene.add( light );
+
+				var light2 = new THREE.DirectionalLight( 0xffffff, 1 );
+				light2.position.set( -30, -30, 30 );
+				scene.add( light2 );
 
 				group = new THREE.Object3D();
 				// group.position.y = -100;
@@ -244,7 +251,7 @@
 				nurbsGeometryf.vertices = nurbsCurvef.getPoints(200);
 				nurbsGeometrye.vertices = nurbsCurvee.getPoints(200);
 				nurbsGeometryn.vertices = nurbsCurven.getPoints(200);
-				var nurbsMaterial = new THREE.LineBasicMaterial( { linewidth: 10, color: 0xff2222, opacity: 0.75, transparent: false } );
+				var nurbsMaterial = new THREE.LineBasicMaterial( { linewidth: 10, color: 0x0022ee, opacity: 0.75, transparent: false } );
 
 				var nurbsLine = new THREE.Line( nurbsGeometry, nurbsMaterial );
 				nurbsLine.position.set( 0, 0, 0 );
@@ -268,6 +275,18 @@
 				nurbsControlPointsLine.position.copy( nurbsLine.position );
 				group.add( nurbsControlPointsLine );
 
+				nurbsControlPointsGeometryf.vertices = nurbsCurvef.controlPoints;
+				var nurbsControlPointsLinef = new THREE.Line( nurbsControlPointsGeometryf, nurbsControlPointsMaterial );
+				group.add( nurbsControlPointsLinef );
+
+				nurbsControlPointsGeometrye.vertices = nurbsCurvee.controlPoints;
+				var nurbsControlPointsLinee = new THREE.Line( nurbsControlPointsGeometrye, nurbsControlPointsMaterial );
+				group.add( nurbsControlPointsLinee );
+
+				nurbsControlPointsGeometryn.vertices = nurbsCurven.controlPoints;
+				var nurbsControlPointsLinen = new THREE.Line( nurbsControlPointsGeometryn, nurbsControlPointsMaterial );
+				group.add( nurbsControlPointsLinen );
+
 				var pgeo = nurbsControlPointsGeometry.clone();
 				for (var i = nurbsControlPoints.length - 1; i >= 0; i--) {
 						var planegeometry = new THREE.PlaneGeometry( 5, 5 );
@@ -281,21 +300,57 @@
 						objects.push( plane );
 				};
 
+				// for (var i = nurbsControlPointf.length - 1; i >= 0; i--) {
+				// 		var planegeometry = new THREE.PlaneGeometry( 5, 5 );
+				// 		var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+				// 		plane = new THREE.Mesh( planegeometry, planematerial );
+				// 		plane.position.x = nurbsControlPointf[i].x;
+				// 		plane.position.y = nurbsControlPointf[i].y;
+				// 		plane.position.z = nurbsControlPointf[i].z;
+				// 		plane.name = i;
+				// 		scene.add(plane);
+				// 		objects.push( plane );
+				// };
+
+				// for (var i = nurbsControlPointb.length - 1; i >= 0; i--) {
+				// 		var planegeometry = new THREE.PlaneGeometry( 5, 5 );
+				// 		var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+				// 		plane = new THREE.Mesh( planegeometry, planematerial );
+				// 		plane.position.x = nurbsControlPointb[i].x;
+				// 		plane.position.y = nurbsControlPointb[i].y;
+				// 		plane.position.z = nurbsControlPointb[i].z;
+				// 		plane.name = i;
+				// 		scene.add(plane);
+				// 		objects.push( plane );
+				// };
+
+				// for (var i = nurbsControlPointn.length - 1; i >= 0; i--) {
+				// 		var planegeometry = new THREE.PlaneGeometry( 5, 5 );
+				// 		var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+				// 		plane = new THREE.Mesh( planegeometry, planematerial );
+				// 		plane.position.x = nurbsControlPointn[i].x;
+				// 		plane.position.y = nurbsControlPointn[i].y;
+				// 		plane.position.z = nurbsControlPointn[i].z;
+				// 		plane.name = i;
+				// 		scene.add(plane);
+				// 		objects.push( plane );
+				// };
+
 				// planectr = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.75, transparent: true } ) );
 				planectr = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.75, transparent: true, wireframe: true } ) );
 				planectr.visible = false;
 				scene.add( planectr );
 
-				// var map = THREE.ImageUtils.loadTexture( 'textures/UV_Grid_Sm.jpg' );
-				// map.wrapS = map.wrapT = THREE.RepeatWrapping;
-				// map.anisotropy = 16;
+				var map = THREE.ImageUtils.loadTexture( 'textures/UV_Grid_Sm.jpg' );
+				map.wrapS = map.wrapT = THREE.RepeatWrapping;
+				map.anisotropy = 16;
 				var points = nurbsGeometry.vertices.slice(0);
 				var pointf = nurbsGeometryf.vertices.slice(0);
 				var pointe = nurbsGeometrye.vertices.slice(0);
 				var pointn = nurbsGeometryn.vertices.slice(0);
 				var pointsArray= new Array(points,pointf,pointn,pointe);
 				// var material = new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, map: map, side: THREE.DoubleSide } );
-				// var material = new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, color: 0x000000, side: THREE.DoubleSide ,wireframe: true, linewidth:3} );
+				// var material = new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, map: map, side: THREE.DoubleSide ,wireframe: true} );
 				var material = new THREE.MeshLambertMaterial( { ambient: 0x333333, color: 0x009900, side: THREE.DoubleSide} );
 				// surefacegeoHalf =  new THREE.LatheGeometry( points, 20,Math.PI / 4 ,  Math.PI * 1.749);
 				// surefaceHalf = new THREE.Mesh(surefacegeoHalf, material );
@@ -307,8 +362,8 @@
 				// group.add( sureface );
 
 				// var nubrspoints = funclerp(pointf,points,5);
-				var nubrspoints = funclerpArray(pointsArray,5);
-				nubrsgeo = new THREE.NurbsGeometry(nubrspoints,5);
+				var nubrspoints = funclerpArray(pointsArray,15);
+				nubrsgeo = new THREE.NurbsGeometry(nubrspoints,15);
 				nubrsmesh = new THREE.Mesh(nubrsgeo, material);
 				nubrsmesh.position.set(0,0,0);
 				scene.add(nubrsmesh);
@@ -356,38 +411,92 @@
 				if (pointsArray[0].length != pointsArray[1].length || pointsArray[2].length != pointsArray[3].length || pointsArray[3].length != pointsArray[0].length) {
 					console.log("verteces number was not same.");
 				};
-
 				for (var i = 0, ij = pointsArray[0].length - 1; i <= ij ; i++) {
-					for(var k = 0; k < pointsArray.length; k++){
-						if(k < 3){
-							var tmppoint1 = pointsArray[k][i], tmppoint2 = pointsArray[k + 1 ][i];
-							for (var j = 0, js = step;j < js; j++) {
-								var offpoint = new THREE.Vector4(), totalPoint = new THREE.Vector4();
-								offpoint.subVectors(tmppoint1,tmppoint2);
-								offpoint.w = 1;
-								offpoint.divideScalar(step);
-								offpoint.multiplyScalar(j);
-								totalPoint.subVectors(tmppoint1,offpoint);
-								totalPoint.w = 1;
+					// for(var k = 0; k < pointsArray.length; k+=3){
+						// for (var j = 0, js = step;j < js; j++) {
+							var xRadius = pointsArray[0][i].x,yRadius = pointsArray[3][i].z;           // xRadius, yRadius
+							var curve = new THREE.EllipseCurve(
+								0,  0,            // ax, aY
+								xRadius, yRadius,           // xRadius, yRadius
+								0,  2 * Math.PI,  // aStartAngle, aEndAngle
+								false             // aClockwise
+							);
 
-								lerpPoints.push(totalPoint);
+							var ecpoints = curve.getPoints( step * 4);
+							for (var u = 0; u < ecpoints.length -1; u++) {
+								var vertex = new THREE.Vector4( ecpoints[u].x,pointsArray[0][i].y, ecpoints[u].y, 1 );
+								lerpPoints.push(vertex)
 							};
-						}else{
-							var tmppoint1 = pointsArray[k][i], tmppoint2 = pointsArray[0][i];
-							for (var j = 0, js = step;j < js; j++) {
-								var offpoint = new THREE.Vector4(), totalPoint = new THREE.Vector4();
-								offpoint.subVectors(tmppoint1,tmppoint2);
-								offpoint.w = 1;
-								offpoint.divideScalar(step);
-								offpoint.multiplyScalar(j);
-								totalPoint.subVectors(tmppoint1,offpoint);
-								totalPoint.w = 1;
-								lerpPoints.push(totalPoint);
-							};
+						// }
+					// }
+				}
 
-						};
-					};	
-				};
+				// for (var i = 0, ij = pointsArray[0].length - 1; i <= ij ; i++) {
+					// for(var k = 0; k < pointsArray.length; k++){
+					// 		var phiStart = Math.PI * k;
+					// 		var phiLength = Math.PI / 2;
+					// 		var phi = phiStart + k * 1/step * phiLength;
+					// 		var c = Math.cos( phi ),
+					// 			s = Math.sin( phi );
+					// 		var tmppoint1 = new THREE.Vector4();
+					// 		var tmppoint2 = new THREE.Vector4();
+					// 		for (var j = 0, js = step;j < js; j++) {
+					// 			var qpoint = new THREE.Vector4();
+					// 			// if(k < 3 && k == 0){
+					// 			// 	tmppoint1 = pointsArray[k][i];
+					// 			// 	tmppoint2 = pointsArray[k + 1 ][i];
+					// 			// 	var offpoint = new THREE.Vector4(), totalPoint = new THREE.Vector4();
+					// 			// 	offpoint.subVectors(tmppoint1,tmppoint2);
+					// 			// 	offpoint.w = 1;
+					// 			// 	offpoint.divideScalar(step);
+					// 			// 	offpoint.multiplyScalar(j);
+					// 			// 	totalPoint.subVectors(tmppoint1,offpoint);
+					// 			// 	// totalPoint.w = 1;
+					// 			// 	qpoint.set( totalPoint.x, totalPoint.y, totalPoint.z, 1 );
+					// 			// 	// qpoint.set( totalPoint.x, totalPoint.y, totalPoint.z * (1+Math.sin(Math.PI/(j+1))*2), 1 );
+					// 			// 	// totalPoint.z =  s * totalPoint.x + c * totalPoint.z;
+					// 			// }else if(k < 3 && k == 1){
+					// 			// 	tmppoint1 = pointsArray[k][i];
+					// 			// 	tmppoint2 = pointsArray[k + 1 ][i];
+					// 			// 	var offpoint = new THREE.Vector4(), totalPoint = new THREE.Vector4();
+					// 			// 	offpoint.subVectors(tmppoint1,tmppoint2);
+					// 			// 	offpoint.w = 1;
+					// 			// 	offpoint.divideScalar(step);
+					// 			// 	offpoint.multiplyScalar(j);
+					// 			// 	totalPoint.subVectors(tmppoint1,offpoint);
+					// 			// 	// totalPoint.w = 1;
+					// 			// 	qpoint.set( totalPoint.x, totalPoint.y, totalPoint.z, 1 );
+					// 			// 	// totalPoint.z =  s * totalPoint.x + c * totalPoint.z;
+					// 			// }else if(k < 3 && k == 2){
+					// 			// 	tmppoint1 = pointsArray[k][i];
+					// 			// 	tmppoint2 = pointsArray[k + 1 ][i];
+					// 			// 	var offpoint = new THREE.Vector4(), totalPoint = new THREE.Vector4();
+					// 			// 	offpoint.subVectors(tmppoint1,tmppoint2);
+					// 			// 	offpoint.w = 1;
+					// 			// 	offpoint.divideScalar(step);
+					// 			// 	offpoint.multiplyScalar(j);
+					// 			// 	totalPoint.subVectors(tmppoint1,offpoint);
+					// 			// 	// totalPoint.w = 1;
+					// 			// 	qpoint.set( totalPoint.x, totalPoint.y, totalPoint.z, 1 );
+					// 			// 	// totalPoint.z =  s * totalPoint.x + c * totalPoint.z;
+					// 			// }else{
+					// 			// 	tmppoint1 = pointsArray[k][i];
+					// 			// 	tmppoint2 = pointsArray[0][i];
+					// 			// 	var offpoint = new THREE.Vector4(), totalPoint = new THREE.Vector4();
+					// 			// 	offpoint.subVectors(tmppoint1,tmppoint2);
+					// 			// 	offpoint.w = 1;
+					// 			// 	offpoint.divideScalar(step);
+					// 			// 	offpoint.multiplyScalar(j);
+					// 			// 	totalPoint.subVectors(tmppoint1,offpoint);
+					// 			// 	// totalPoint.w = 1;
+					// 			// 	qpoint.set( totalPoint.x, totalPoint.y, totalPoint.z, 1 );
+					// 			// 	// totalPoint.z =  s * totalPoint.x + c * totalPoint.z;
+					// 			// }
+					// 				lerpPoints.push(qpoint);								
+					// 		};
+
+					// };
+				// };
 
 				return lerpPoints;
 			}
