@@ -37,7 +37,32 @@ THREE.EllipseFlowerCurve.prototype.getPoint = function ( t ) {
 
 	}
 
-	if (t % 2 =0){
+	var tx = this.aX + this.xRadius * Math.cos( angle );
+	var ty = this.aY + this.yRadius * Math.sin( angle );
+
+	return new THREE.Vector2( tx, ty );
+
+};
+
+THREE.EllipseFlowerCurve.prototype.getFlowerPoint = function ( t, force) {
+
+	var angle;
+	var deltaAngle = this.aEndAngle - this.aStartAngle;
+
+	if ( deltaAngle < 0 ) deltaAngle += Math.PI * 2;
+	if ( deltaAngle > Math.PI * 2 ) deltaAngle -= Math.PI * 2;
+
+	if ( this.aClockwise === true ) {
+
+		angle = this.aEndAngle + ( 1 - t ) * ( Math.PI * 2 - deltaAngle );
+
+	} else {
+
+		angle = this.aStartAngle + t * deltaAngle;
+
+	}
+
+	if ( force ){
 		var tx = this.aX + this.xRadius * Math.cos( angle ) * 1.1;
 		var ty = this.aY + this.yRadius * Math.sin( angle ) * 1.1;
 

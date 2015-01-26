@@ -363,8 +363,8 @@
 				// group.add( sureface );
 
 				// var nubrspoints = funclerp(pointf,points,5);
-				var nubrspoints = funclerpArray(pointsArray,15);
-				nubrsgeo = new THREE.NurbsGeometry(nubrspoints,15);
+				var nubrspoints = funclerpArray(pointsArray,32);
+				nubrsgeo = new THREE.NurbsGeometry(nubrspoints,32);
 				nubrsmesh = new THREE.Mesh(nubrsgeo, material);
 				nubrsmesh.position.set(0,0,0);
 				scene.add(nubrsmesh);
@@ -417,7 +417,7 @@
 						// for (var j = 0, js = step;j < js; j++) {
 							var nurbsKnotsbot = [], nurbsControlPointbot=[];
 							var xRadius = pointsArray[0][i].x,yRadius = pointsArray[3][i].z;           // xRadius, yRadius
-							var curve = new THREE.EllipseCurve(
+							var curve = new THREE.EllipseFlowerCurve(
 								0,  0,            // ax, aY
 								xRadius, yRadius,           // xRadius, yRadius
 								0,  2 * Math.PI,  // aStartAngle, aEndAngle
@@ -429,7 +429,7 @@
 								nurbsKnotsbot.push( 0 );
 
 							}
-							var cpoints = curve.getPoints(step);
+							var cpoints = curve.getFlowerPoints(step);
 							for ( var v = 0, w = cpoints.length; v < w; v ++ ) {
 								if (v%3 != 1) {
 									nurbsControlPointbot.push(
