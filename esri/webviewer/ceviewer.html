@@ -1,0 +1,82 @@
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="chrome=1, IE=edge">
+<link rel="shortcut icon" type="image/x-icon" href="http://www.arcgis.com/apps/CEWebViewer/css/images/favicon.ico">
+
+<title>CityEngine WebScene Viewer</title>
+
+ 
+<link rel="stylesheet" type="text/css" href="http://www.arcgis.com/apps/CEWebViewer/js/dojo/dijit/themes/claro/claro.css">
+<link rel="stylesheet" type="text/css" href="http://www.arcgis.com/apps/CEWebViewer/css/styles.css"></link>
+
+<script>
+  var dojoConfig = {
+	locale: 'en',	    
+    isDebug: false,
+    packages: [
+      { name: "esri", location: "../../esri" },
+      { name: "WebScene", location: "../../WebScene" }
+    ]
+  };
+</script>
+
+<script type="text/javascript" src="http://www.arcgis.com/apps/CEWebViewer/js/dojo/dojo/dojo.js"></script>
+
+</head>
+<body class="claro">
+	<script>
+    	dojo.require("WebScene.Stage");
+		dojo.require("WebScene.app.UI");
+
+		dojo.ready(initalizeApp);
+
+		function initalizeApp() {
+			/*****************
+			 * Create a Stage
+			 *****************/
+
+			function loadedCallback() {
+
+				uiProgress.hide()
+
+				ui = new UI(stage);
+				ui.createNav(dojo.byId('nav'));
+				ui.createMenu(dojo.byId('menu'));
+				ui.createHead(dojo.byId('head'));
+			}
+
+			var uiProgress = new UI.Progress(dojo.byId("loader"));
+
+			var container = dojo.byId("container");
+			// necessary as div can NOT fill the remaining space with css only... (not a generic solution here)
+			container.style.top = dojo.byId("head").offsetHeight;
+
+			//eval url
+			var qs = dojo.queryToObject(dojo.doc.location.search
+					.substr((dojo.doc.location.search[0] === "?" ? 1 : 0)));
+			if ('3dWebScene' in qs) {
+				stage = new WebScene.Stage(qs['3dWebScene'], document
+					.getElementById("container"), loadedCallback, uiProgress);
+			}
+			else {
+				uiProgress.update('error', 'No webscene specified', '. Use url parameter \'3dWebScene\' to specify ArcGIS online item id or local 3ws file');
+			}
+		}
+	</script>
+
+	<div id="loader"></div>
+
+
+	<div id="head"></div>
+	<div id="container"></div>
+
+	<div id="status"></div>
+	<div id="nav"></div>
+	<div id="menu"></div>
+	<div id="aologo"></div>
+
+</body>
+</html>

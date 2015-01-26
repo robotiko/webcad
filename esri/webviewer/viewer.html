@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="chrome=1, IE=edge">
+<meta property="ce:viewerversion" content="2.2.1.201306201008_">
+<link rel="shortcut icon" type="image/x-icon" href="css/images/favicon.ico">
+
+<title></title>
+
+<link rel="stylesheet" type="text/css"	href="//rukun.arcgiscloud.cn/arcgis/jsapi/jsapi/js/dojo/dijit/themes/claro/claro.css"> 
+
+<link rel="stylesheet" type="text/css" href="css/styles.css">
+
+<script>
+
+var dojoConfig = {
+	    isDebug: false,
+	    packages: [
+	      { name: "esri", location: "../../esri" },
+	      { name: "ceviewer", location: "../../.." },				
+	      { name: "engine", location: "../../../src/engine" },
+	      { name: "arcgis3d", location: "../../../src/arcgis3d" }
+	    ]
+	  };
+</script>
+
+<script type="text/javascript" src="./js/dojo/dojo/dojo.js"></script>		
+
+<script type="text/javascript">
+	var ceviewer = {};
+	require(["ceviewer/Application","dojo/domReady!"], function(App){
+		ceviewer.app = new App();
+	});
+</script>
+
+</head>
+<body class="claro">
+	<h3>CityEngine Web Viewer</h3>
+</body>
+</html>
+
+
