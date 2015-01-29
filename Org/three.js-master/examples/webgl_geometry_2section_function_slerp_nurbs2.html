@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+	<!-- based on webgl_geometry_shapes.html and webgl_geometries2.html -->
+	<head>
+		<title>three.js webgl - Nurbs曲线旋转生成曲面,即时调整更新实例</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #f0f0f0;
+				margin: 0px;
+				overflow: hidden;
+			}
+			#info {
+				position: absolute;
+				top: 0px;
+				width: 100%;
+				padding: 5px;
+				text-align:center;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="debug" style="position:absolute; left:100px"></canvas>
+
+		<div id="info"><a href="http://threejs.org" target="_blank">three.js</a> - Nurbs曲线旋转生成曲面,即时调整更新实例</div>
+
+		<script src="../build/three2.js"></script>
+		<script src="js/curves/NURBSCurve.js"></script>
+		<script src="js/curves/NURBSSurface.js"></script>
+		<script src="js/curves/NURBSUtils.js"></script>
+		<script src="js/libs/stats.min.js"></script>
+		<script src="js/controls/TrackballControls.js"></script>
+
+
+		<script>
+
+			var container, stats;
+
+			var camera, scene, controls, renderer,projector ,INTERSECTED, SELECTED,plane,planef,planeb,planen,planet,planectr,nubrsgeo;
+			var particles, objects = [],cpoints = [];
+			var nurbsControlPointsGeometry = new THREE.Geometry();
+			var nurbsControlPointsGeometryf = new THREE.Geometry();
+			var nurbsControlPointsGeometrye = new THREE.Geometry();
+			var nurbsControlPointsGeometryn = new THREE.Geometry();
+			var nurbsControlPoints = [], nurbsCurve,nurbsCurvef, surefacegeo,sureface,surefacegeoHalf,surefaceHalf, nurbsControlPointf = [], nurbsControlPointb = [], nurbsControlPointn = [],nubrsmesh;
+			var nurbsGeometry = new THREE.Geometry();
+			var nurbsGeometryf = new THREE.Geometry();
+			var nurbsGeometrye = new THREE.Geometry();
+			var nurbsGeometryn = new THREE.Geometry();
+
+			var clock = new THREE.Clock();
+			var mouse = new THREE.Vector2(),
+			offset = new THREE.Vector3();
+
+
+			init();
+			animate();
+
+
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				var info = document.createElement( 'div' );
+				info.style.position = 'absolute';
+				info.style.top = '30px';
+				info.style.width = '100%';
+				info.style.textAlign = 'center';
+				info.innerHTML = '拖动黄色节点,调整曲面母线';
+				container.appendChild( info );
+
+				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 2000 );
+				camera.position.set(  0, 200, 350 );
+				// camera.lookAt( new THREE.Vector3(0, 0, 0) );
+
+
+				controls = new THREE.TrackballControls( camera );
+				controls.rotateSpeed = 1.0;
+				controls.zoomSpeed = 1.2;
+				controls.panSpeed = 0.8;
+				controls.noZoom = false;
+				controls.noPan = false;
+				controls.staticMoving = true;
+				controls.dynamicDampingFactor = 0.3;
+
+				scene = new THREE.Scene();
+				scene.add( new THREE.AmbientLight( 0x808080 ) );
+
+				var light = new THREE.DirectionalLight( 0xffffff, 1 );
+				light.position.set( 50, 50, 3 );
+				scene.add( light );
+
+				var light2 = new THREE.DirectionalLight( 0xffffff, 1 );
+				light2.position.set( -30, -30, 30 );
+				scene.add( light2 );
+
+				group = new THREE.Object3D();
+				// group.position.y = -100;
+				scene.add( group );
+
+				// NURBS curve
+
+				var nurbsKnots = [],nurbsKnots1 = [],nurbsKnots2 = [],nurbsKnots3 = [];
+				var nurbsDegree = 3;
+
+				for ( var i = 0; i <= nurbsDegree; i ++ ) {
+
+					nurbsKnots.push( 0 );
+
+				}
+
+				for ( var i = 0; i <= nurbsDegree; i ++ ) {
+
+					nurbsKnots1.push( 0 );
+
+				}
+
+				for ( var i = 0; i <= nurbsDegree; i ++ ) {
+
+					nurbsKnots2.push( 0 );
+
+				}
+
+				for ( var i = 0; i <= nurbsDegree; i ++ ) {
+
+					nurbsKnots3.push( 0 );
+
+				}
+
+				for ( var i = 0, j = 20; i < j; i ++ ) {
+					if (i%3 != 1) {
+						nurbsControlPointf.push(
+							new THREE.Vector4(
+								0,
+								i * 10,
+								20,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);	
+
+					} else{
+
+						nurbsControlPointf.push(
+							new THREE.Vector4(
+								0,
+								i * 10,
+								10,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);					
+					};
+
+					var knot1 = ( i + 1 ) / ( j - nurbsDegree );
+					nurbsKnots1.push( THREE.Math.clamp( knot1, 0, 1 ) );					
+				}
+
+				for ( var i = 0, j = 20; i < j; i ++ ) {
+					if (i%3 != 1) {
+						nurbsControlPoints.push(
+							new THREE.Vector4(
+								15,
+								i * 10,
+								0,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);	
+
+					} else{
+
+						nurbsControlPoints.push(
+							new THREE.Vector4(
+								25,
+								i * 10,
+								0,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);					
+					};
+
+					var knot = ( i + 1 ) / ( j - nurbsDegree );
+					nurbsKnots.push( THREE.Math.clamp( knot, 0, 1 ) );
+
+				}
+
+				for ( var i = 0, j = 20; i < j; i ++ ) {
+					if (i%3 != 1) {
+						nurbsControlPointb.push(
+							new THREE.Vector4(
+								0,
+								i * 10,
+								-20,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);	
+
+					} else{
+
+						nurbsControlPointb.push(
+							new THREE.Vector4(
+								0,
+								i * 10,
+								-10,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);					
+					};
+
+					var knot2 = ( i + 1 ) / ( j - nurbsDegree );
+					nurbsKnots2.push( THREE.Math.clamp( knot2, 0, 1 ) );					
+				}
+
+				for ( var i = 0, j = 20; i < j; i ++ ) {
+					if (i%3 != 1) {
+						nurbsControlPointn.push(
+							new THREE.Vector4(
+								-15,
+								i * 10,
+								0,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);	
+
+					} else{
+
+						nurbsControlPointn.push(
+							new THREE.Vector4(
+								-25,
+								i * 10,
+								0,
+								1 // weight of control point: higher means stronger attraction
+							)
+						);					
+					};
+
+					var knot3 = ( i + 1 ) / ( j - nurbsDegree );
+					nurbsKnots3.push( THREE.Math.clamp( knot3, 0, 1 ) );
+
+				}
+				projector = new THREE.Projector();
+
+				nurbsCurve = new THREE.NURBSCurve(nurbsDegree, nurbsKnots, nurbsControlPoints);
+				nurbsCurvef = new THREE.NURBSCurve(nurbsDegree, nurbsKnots1, nurbsControlPointf);
+				nurbsCurvee = new THREE.NURBSCurve(nurbsDegree, nurbsKnots2, nurbsControlPointb);
+				nurbsCurven = new THREE.NURBSCurve(nurbsDegree, nurbsKnots3, nurbsControlPointn);
+
+				nurbsGeometry.vertices = nurbsCurve.getPoints(200);
+				nurbsGeometryf.vertices = nurbsCurvef.getPoints(200);
+				nurbsGeometrye.vertices = nurbsCurvee.getPoints(200);
+				nurbsGeometryn.vertices = nurbsCurven.getPoints(200);
+				var nurbsMaterial = new THREE.LineBasicMaterial( { linewidth: 10, color: 0x0022ee, opacity: 0.75, transparent: false } );
+
+				var nurbsLine = new THREE.Line( nurbsGeometry, nurbsMaterial );
+				nurbsLine.position.set( 0, 0, 0 );
+				group.add( nurbsLine );
+
+				var nurbsLinef = new THREE.Line( nurbsGeometryf, nurbsMaterial );
+				nurbsLinef.position.set( 0, 0, 0 );
+				group.add( nurbsLinef );
+				
+				var nurbsLinee = new THREE.Line( nurbsGeometrye, nurbsMaterial );
+				nurbsLine.position.set( 0, 0, 0 );
+				group.add( nurbsLinee );
+
+				var nurbsLinen = new THREE.Line( nurbsGeometryn, nurbsMaterial );
+				nurbsLinef.position.set( 0, 0, 0 );
+				group.add( nurbsLinen );
+				
+				nurbsControlPointsGeometry.vertices = nurbsCurve.controlPoints;
+				var nurbsControlPointsMaterial = new THREE.LineBasicMaterial( { linewidth: 5, color: 0x33ff33, opacity: 0.75, transparent: true } );
+				var nurbsControlPointsLine = new THREE.Line( nurbsControlPointsGeometry, nurbsControlPointsMaterial );
+				nurbsControlPointsLine.position.copy( nurbsLine.position );
+				group.add( nurbsControlPointsLine );
+
+				nurbsControlPointsGeometryf.vertices = nurbsCurvef.controlPoints;
+				var nurbsControlPointsLinef = new THREE.Line( nurbsControlPointsGeometryf, nurbsControlPointsMaterial );
+				group.add( nurbsControlPointsLinef );
+
+				nurbsControlPointsGeometrye.vertices = nurbsCurvee.controlPoints;
+				var nurbsControlPointsLinee = new THREE.Line( nurbsControlPointsGeometrye, nurbsControlPointsMaterial );
+				group.add( nurbsControlPointsLinee );
+
+				nurbsControlPointsGeometryn.vertices = nurbsCurven.controlPoints;
+				var nurbsControlPointsLinen = new THREE.Line( nurbsControlPointsGeometryn, nurbsControlPointsMaterial );
+				group.add( nurbsControlPointsLinen );
+
+				var pgeo = nurbsControlPointsGeometry.clone();
+				for (var i = nurbsControlPoints.length - 1; i >= 0; i--) {
+						var planegeometry = new THREE.PlaneGeometry( 5, 5 );
+						planegeometry.name = "plane";
+						var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+						plane = new THREE.Mesh( planegeometry, planematerial );
+						plane.position.x = nurbsControlPoints[i].x;
+						plane.position.y = nurbsControlPoints[i].y;
+						plane.position.z = nurbsControlPoints[i].z;
+						plane.name = i;
+						scene.add(plane);
+						objects.push( plane );
+				};
+
+				for (var i = nurbsControlPointf.length - 1; i >= 0; i--) {
+						var planegeometry = new THREE.PlaneGeometry( 5, 5 );
+						planegeometry.name = "planef";
+						var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+						planef = new THREE.Mesh( planegeometry, planematerial );
+						planef.position.x = nurbsControlPointf[i].x;
+						planef.position.y = nurbsControlPointf[i].y;
+						planef.position.z = nurbsControlPointf[i].z;
+						planef.rotation.y = Math.PI / 2;
+						planef.name = i;
+						scene.add(planef);
+						objects.push( planef );
+				};
+
+				for (var i = nurbsControlPointb.length - 1; i >= 0; i--) {
+						var planegeometry = new THREE.PlaneGeometry( 5, 5 );
+						planegeometry.name = "planeb";
+						var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+						planeb = new THREE.Mesh( planegeometry, planematerial );
+						planeb.position.x = nurbsControlPointb[i].x;
+						planeb.position.y = nurbsControlPointb[i].y;
+						planeb.position.z = nurbsControlPointb[i].z;
+						planeb.rotation.y = Math.PI / 2;
+						planeb.name = i;
+						scene.add(planeb);
+						objects.push( planeb );
+				};
+
+				for (var i = nurbsControlPointn.length - 1; i >= 0; i--) {
+						var planegeometry = new THREE.PlaneGeometry( 5, 5 );
+						planegeometry.name = "planen";
+						var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+						planen = new THREE.Mesh( planegeometry, planematerial );
+						planen.position.x = nurbsControlPointn[i].x;
+						planen.position.y = nurbsControlPointn[i].y;
+						planen.position.z = nurbsControlPointn[i].z;
+						planen.name = i;
+						scene.add(planen);
+						objects.push( planen );
+				};
+
+				// planectr = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.75, transparent: true } ) );
+				planectr = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.75, transparent: true, wireframe: true } ) );
+				planectr.visible = false;
+				scene.add( planectr );
+
+				var map = THREE.ImageUtils.loadTexture( 'textures/UV_Grid_Sm.jpg' );
+				map.wrapS = map.wrapT = THREE.RepeatWrapping;
+				map.anisotropy = 16;
+				var points = nurbsGeometry.vertices.slice(0);
+				var pointf = nurbsGeometryf.vertices.slice(0);
+				var pointe = nurbsGeometrye.vertices.slice(0);
+				var pointn = nurbsGeometryn.vertices.slice(0);
+				var pointsArray= new Array(points,pointf,pointn,pointe);
+				// var material = new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, map: map, side: THREE.DoubleSide } );
+				// var material = new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, map: map, side: THREE.DoubleSide ,wireframe: true} );
+				var material = new THREE.MeshLambertMaterial( { ambient: 0x333333, color: 0x009900, side: THREE.DoubleSide} );
+				// var material = new THREE.MeshLambertMaterial( { ambient: 0x333333, color: 0x009900, side: THREE.DoubleSide,wireframe: true} );
+				// surefacegeoHalf =  new THREE.LatheGeometry( points, 20,Math.PI / 4 ,  Math.PI * 1.749);
+				// surefaceHalf = new THREE.Mesh(surefacegeoHalf, material );
+				// surefaceHalf.position.set( -100, 0, 0 );
+				// group.add( surefaceHalf );
+				// surefacegeo =  new THREE.LatheGeometry( points, 20 );
+				// sureface = new THREE.Mesh(surefacegeo, material );
+				// sureface.position.set( 100, 0, 0 );
+				// group.add( sureface );
+
+				// var nubrspoints = funclerp(pointf,points,5);
+				var nubrspoints = funclerpArray(pointsArray,32);
+				nubrsgeo = new THREE.NurbsGeometry(nubrspoints,32);
+				nubrsmesh = new THREE.Mesh(nubrsgeo, material);
+				nubrsmesh.position.set(0,0,0);
+				scene.add(nubrsmesh);
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setClearColor( 0xf0f0f0 );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				container.appendChild( renderer.domElement );
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				container.appendChild( stats.domElement );
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+				document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function funclerp(ps2,ps1,step) {
+				var lerpPoints = [];
+				var tmpPoints=ps1;
+				var tmpPointf=ps2;
+				if (ps1.length != ps2.length) {
+					console.log("verteces number was not same.");
+				};
+
+				for (var i = 0, ij = ps1.length - 1; i <= ij ; i++) {
+					for (var j = 0, js = step;j <= js; j++) {
+						lerpPoints.push(tmpPoints[i].lerp(tmpPointf[i],0.2*j).clone());
+					};
+				};
+				return lerpPoints;
+			}
+
+			function funclerpArray(pointsArray,step) {
+				var lerpPoints = [];
+
+				if (pointsArray[0].length != pointsArray[1].length || pointsArray[2].length != pointsArray[3].length || pointsArray[3].length != pointsArray[0].length) {
+					console.log("verteces number was not same.");
+				};
+				for (var i = 0, ij = pointsArray[0].length - 1; i <= ij ; i++) {
+					// for(var k = 0; k < pointsArray.length; k+=3){
+						// for (var j = 0, js = step;j < js; j++) {
+							var nurbsKnotsbot = [], nurbsControlPointbot=[];
+							var xRadius = pointsArray[0][i].x,yRadius = pointsArray[3][i].z;           // xRadius, yRadius
+							var curve = new THREE.EllipseFlowerCurve(
+								0,  0,            // ax, aY
+								xRadius, yRadius,           // xRadius, yRadius
+								0,  2 * Math.PI,  // aStartAngle, aEndAngle
+								false             // aClockwise
+							);
+
+							for ( var v = 0; v <= 3; v ++ ) {
+
+								nurbsKnotsbot.push( 0 );
+
+							}
+							cpoints = curve.getFlowerPoints(step);
+							for ( var v = 0, w = cpoints.length; v < w; v ++ ) {
+								if (v%3 != 1) {
+									nurbsControlPointbot.push(
+										new THREE.Vector4(
+											cpoints[v].x,
+											pointsArray[0][i].y,
+											cpoints[v].y,
+											1 // weight of control point: higher means stronger attraction
+										)
+									);	
+
+								} else{
+
+									nurbsControlPointbot.push(
+										new THREE.Vector4(
+											cpoints[v].x,
+											pointsArray[0][i].y,
+											cpoints[v].y,
+											1 // weight of control point: higher means stronger attraction
+										)
+									);					
+								};
+
+								var knotbot = ( v + 1 ) / ( w - 3 );
+								nurbsKnotsbot.push( THREE.Math.clamp( knotbot, 0, 1 ) );
+
+							}
+							var nurbsCurvebot = new THREE.NURBSCurve(3, nurbsKnotsbot, nurbsControlPointbot);
+							var nurbsGeometrybot = new THREE.Geometry();
+							nurbsGeometrybot.vertices = nurbsCurvebot.getPoints(step * 4);
+
+							// var nurbsMaterial = new THREE.LineBasicMaterial( { linewidth: 10, color: 0x0022ee, opacity: 0.75, transparent: false } );
+							// var nurbsLinen = new THREE.Line( nurbsGeometrybot, nurbsMaterial );
+							// group.add( nurbsLinen );
+							
+							// var nurbsControlPointsGeometrybot = new THREE.Geometry();
+							// nurbsControlPointsGeometrybot.vertices = nurbsCurvebot.controlPoints;
+							// var nurbsControlPointsMaterial = new THREE.LineBasicMaterial( { linewidth: 5, color: 0xee2233, opacity: 0.75, transparent: true } );
+							// var nurbsControlPointsLine = new THREE.Line( nurbsControlPointsGeometrybot, nurbsControlPointsMaterial );
+							// group.add( nurbsControlPointsLine );
+
+							var ecpoints = nurbsCurvebot.getPoints(step * 4);
+							// console.log(ecpoints);
+							for (var u = 0; u < ecpoints.length -1; u++) {
+								var vertex = new THREE.Vector4( ecpoints[u].x,ecpoints[u].y, ecpoints[u].z, 1 );
+								lerpPoints.push(vertex)
+							};
+
+							// var ecpoints = curve.getPoints( step * 4);
+							// for (var u = 0; u < ecpoints.length -1; u++) {
+							// 	var vertex = new THREE.Vector4( ecpoints[u].x,pointsArray[0][i].y, ecpoints[u].y, 1 );
+							// 	lerpPoints.push(vertex)
+							// };
+						// }
+					// }
+				}
+
+				// for (var i = 0, ij = pointsArray[0].length - 1; i <= ij ; i++) {
+					// for(var k = 0; k < pointsArray.length; k++){
+					// 		var phiStart = Math.PI * k;
+					// 		var phiLength = Math.PI / 2;
+					// 		var phi = phiStart + k * 1/step * phiLength;
+					// 		var c = Math.cos( phi ),
+					// 			s = Math.sin( phi );
+					// 		var tmppoint1 = new THREE.Vector4();
+					// 		var tmppoint2 = new THREE.Vector4();
+					// 		for (var j = 0, js = step;j < js; j++) {
+					// 			var qpoint = new THREE.Vector4();
+					// 			// if(k < 3 && k == 0){
+					// 			// 	tmppoint1 = pointsArray[k][i];
+					// 			// 	tmppoint2 = pointsArray[k + 1 ][i];
+					// 			// 	var offpoint = new THREE.Vector4(), totalPoint = new THREE.Vector4();
+					// 			// 	offpoint.subVectors(tmppoint1,tmppoint2);
+					// 			// 	offpoint.w = 1;
+					// 			// 	offpoint.divideScalar(step);
+					// 			// 	offpoint.multiplyScalar(j);
+					// 			// 	totalPoint.subVectors(tmppoint1,offpoint);
+					// 			// 	// totalPoint.w = 1;
+					// 			// 	qpoint.set( totalPoint.x, totalPoint.y, totalPoint.z, 1 );
+					// 			// 	// qpoint.set( totalPoint.x, totalPoint.y, totalPoint.z * (1+Math.sin(Math.PI/(j+1))*2), 1 );
+					// 			// 	// totalPoint.z =  s * totalPoint.x + c * totalPoint.z;
+					// 			// }else if(k < 3 && k == 1){
+					// 			// 	tmppoint1 = pointsArray[k][i];
+					// 			// 	tmppoint2 = pointsArray[k + 1 ][i];
+					// 			// 	var offpoint = new THREE.Vector4(), totalPoint = new THREE.Vector4();
+					// 			// 	offpoint.subVectors(tmppoint1,tmppoint2);
+					// 			// 	offpoint.w = 1;
+					// 			// 	offpoint.divideScalar(step);
+					// 			// 	offpoint.multiplyScalar(j);
+					// 			// 	totalPoint.subVectors(tmppoint1,offpoint);
+					// 			// 	// totalPoint.w = 1;
+					// 			// 	qpoint.set( totalPoint.x, totalPoint.y, totalPoint.z, 1 );
+					// 			// 	// totalPoint.z =  s * totalPoint.x + c * totalPoint.z;
+					// 			// }else if(k < 3 && k == 2){
+					// 			// 	tmppoint1 = pointsArray[k][i];
+					// 			// 	tmppoint2 = pointsArray[k + 1 ][i];
+					// 			// 	var offpoint = new THREE.Vector4(), totalPoint = new THREE.Vector4();
+					// 			// 	offpoint.subVectors(tmppoint1,tmppoint2);
+					// 			// 	offpoint.w = 1;
+					// 			// 	offpoint.divideScalar(step);
+					// 			// 	offpoint.multiplyScalar(j);
+					// 			// 	totalPoint.subVectors(tmppoint1,offpoint);
+					// 			// 	// totalPoint.w = 1;
+					// 			// 	qpoint.set( totalPoint.x, totalPoint.y, totalPoint.z, 1 );
+					// 			// 	// totalPoint.z =  s * totalPoint.x + c * totalPoint.z;
+					// 			// }else{
+					// 			// 	tmppoint1 = pointsArray[k][i];
+					// 			// 	tmppoint2 = pointsArray[0][i];
+					// 			// 	var offpoint = new THREE.Vector4(), totalPoint = new THREE.Vector4();
+					// 			// 	offpoint.subVectors(tmppoint1,tmppoint2);
+					// 			// 	offpoint.w = 1;
+					// 			// 	offpoint.divideScalar(step);
+					// 			// 	offpoint.multiplyScalar(j);
+					// 			// 	totalPoint.subVectors(tmppoint1,offpoint);
+					// 			// 	// totalPoint.w = 1;
+					// 			// 	qpoint.set( totalPoint.x, totalPoint.y, totalPoint.z, 1 );
+					// 			// 	// totalPoint.z =  s * totalPoint.x + c * totalPoint.z;
+					// 			// }
+					// 				lerpPoints.push(qpoint);								
+					// 		};
+
+					// };
+				// };
+
+				return lerpPoints;
+			}
+
+			function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				controls.handleResize();
+
+			}
+
+
+			function onDocumentMouseMove( event ) {
+
+				event.preventDefault();
+
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+				//
+
+				var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+				projector.unprojectVector( vector, camera );
+
+				var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+
+				if ( SELECTED ) {
+					var intersects = raycaster.intersectObject( planectr );
+					if (SELECTED.geometry.name == "plane") {
+						// SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+						SELECTED.position.x = intersects[ 0 ].point.sub( offset ).x;
+						SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
+						// nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
+						nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x ,SELECTED.position.y,0,1);
+						nurbsGeometry.vertices = nurbsCurve.getPoints(200);
+						nurbsGeometry.verticesNeedUpdate = true;
+						// surefacegeo.vertices  = nurbsGeometry.vertices;
+						// surefacegeoHalf.update(nurbsGeometry.vertices);
+						// surefacegeoHalf.verticesNeedUpdate = true;
+						// surefacegeo.update(nurbsGeometry.vertices);
+						// surefacegeo.verticesNeedUpdate = true;
+						nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x;
+						nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y;
+						// nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+
+					} else if(SELECTED.geometry.name == "planef"){
+						// SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+						SELECTED.position.z = intersects[ 0 ].point.sub( offset ).z;
+						SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
+						// nurbsCurvef.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
+						nurbsCurvef.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(0 ,SELECTED.position.y,SELECTED.position.z,1);
+						nurbsGeometryf.vertices = nurbsCurvef.getPoints(200);
+						nurbsGeometryf.verticesNeedUpdate = true;
+						// surefacegeo.vertices  = nurbsGeometryf.vertices;
+						// surefacegeoHalf.update(nurbsGeometryf.vertices);
+						// surefacegeoHalf.verticesNeedUpdate = true;
+						// surefacegeo.update(nurbsGeometryf.vertices);
+						// surefacegeo.verticesNeedUpdate = true;
+						nurbsControlPointsGeometryf.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+						nurbsControlPointsGeometryf.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y;
+						// nurbsControlPointsGeometryf.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+
+					} else if(SELECTED.geometry.name == "planeb") {
+						// SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+						SELECTED.position.z = intersects[ 0 ].point.sub( offset ).z;
+						SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
+						// nurbsCurvee.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
+						nurbsCurvee.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(0 ,SELECTED.position.y,SELECTED.position.z,1);
+						nurbsGeometrye.vertices = nurbsCurvee.getPoints(200);
+						nurbsGeometrye.verticesNeedUpdate = true;
+						// surefacegeo.vertices  = nurbsGeometrye.vertices;
+						// surefacegeoHalf.update(nurbsGeometrye.vertices);
+						// surefacegeoHalf.verticesNeedUpdate = true;
+						// surefacegeo.update(nurbsGeometrye.vertices);
+						// surefacegeo.verticesNeedUpdate = true;
+						nurbsControlPointsGeometrye.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+						nurbsControlPointsGeometrye.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y;
+						// nurbsControlPointsGeometrye.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+
+					} else if (SELECTED.geometry.name == "planen") {
+						// SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+						SELECTED.position.x = intersects[ 0 ].point.sub( offset ).x;
+						SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
+						// nurbsCurven.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
+						nurbsCurven.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x ,SELECTED.position.y,0,1);
+						nurbsGeometryn.vertices = nurbsCurven.getPoints(200);
+						nurbsGeometryn.verticesNeedUpdate = true;
+						// surefacegeo.vertices  = nurbsGeometryn.vertices;
+						// surefacegeoHalf.update(nurbsGeometryn.vertices);
+						// surefacegeoHalf.verticesNeedUpdate = true;
+						// surefacegeo.update(nurbsGeometryn.vertices);
+						// surefacegeo.verticesNeedUpdate = true;
+						nurbsControlPointsGeometryn.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x;
+						nurbsControlPointsGeometryn.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y;
+						// nurbsControlPointsGeometryn.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+
+					} else{
+						// SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+						SELECTED.position.x = intersects[ 0 ].point.sub( offset ).x;
+						SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
+						// nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
+						nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x ,SELECTED.position.y,0,1);
+						nurbsGeometry.vertices = nurbsCurve.getPoints(200);
+						nurbsGeometry.verticesNeedUpdate = true;
+						// surefacegeo.vertices  = nurbsGeometry.vertices;
+						// surefacegeoHalf.update(nurbsGeometry.vertices);
+						// surefacegeoHalf.verticesNeedUpdate = true;
+						// surefacegeo.update(nurbsGeometry.vertices);
+						// surefacegeo.verticesNeedUpdate = true;
+						nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x;
+						nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y;
+						// nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+
+					};
+
+					var intersects = raycaster.intersectObject( planectr );
+					// // SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+					// SELECTED.position.x = intersects[ 0 ].point.sub( offset ).x;
+					// SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
+					// // nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
+					// nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x ,SELECTED.position.y,0,1);
+					// nurbsGeometry.vertices = nurbsCurve.getPoints(200);
+					// nurbsGeometry.verticesNeedUpdate = true;
+					// // surefacegeo.vertices  = nurbsGeometry.vertices;
+					// // surefacegeoHalf.update(nurbsGeometry.vertices);
+					// // surefacegeoHalf.verticesNeedUpdate = true;
+					// // surefacegeo.update(nurbsGeometry.vertices);
+					// // surefacegeo.verticesNeedUpdate = true;
+					// nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x;
+					// nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y;
+					// // nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+					nurbsControlPointsGeometry.verticesNeedUpdate = true;
+					nurbsControlPointsGeometryf.verticesNeedUpdate = true;
+					nurbsControlPointsGeometrye.verticesNeedUpdate = true;
+					nurbsControlPointsGeometryn.verticesNeedUpdate = true;
+					var points = nurbsGeometry.vertices.slice(0);
+					var pointf = nurbsGeometryf.vertices.slice(0);
+					var pointe = nurbsGeometrye.vertices.slice(0);
+					var pointn = nurbsGeometryn.vertices.slice(0);
+					var pointsArray= new Array(points,pointf,pointn,pointe);
+					// nubrsgeo.update();
+					// nubrsgeo.verticesNeedUpdate = true;
+					render();
+					// console.log(SELECTED);
+					// console.log(nurbsControlPoints[parseInt(SELECTED.name)]);
+					// console.log(nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)]);
+					return;
+
+				}
+
+
+				var intersects = raycaster.intersectObjects( objects );
+
+				if ( intersects.length > 0 ) {
+
+					if ( INTERSECTED != intersects[ 0 ].object ) {
+
+						if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+
+						INTERSECTED = intersects[ 0 ].object;
+						INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+
+						planectr.position.copy( INTERSECTED.position );
+						planectr.lookAt( camera.position );
+
+					}
+					intersects[ 0 ].object.material.color.setHex(0x80ff80);
+					container.style.cursor = 'pointer';
+
+				} else {
+
+					if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+
+					INTERSECTED = null;
+
+					container.style.cursor = 'auto';
+
+				}
+
+			}
+
+			function onDocumentMouseDown( event ) {
+
+				event.preventDefault();
+
+				var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+				projector.unprojectVector( vector, camera );
+
+				var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+				var intersects = raycaster.intersectObjects( objects );
+
+				if ( intersects.length > 0 ) {
+
+					controls.enabled = false;
+
+					SELECTED = intersects[ 0 ].object;
+
+					var intersects = raycaster.intersectObject( planectr );
+					offset.copy( intersects[ 0 ].point ).sub( planectr.position );
+
+					container.style.cursor = 'move';
+
+				}
+
+			}
+
+			function onDocumentMouseUp( event ) {
+
+				event.preventDefault();
+
+				controls.enabled = true;
+
+				if ( INTERSECTED ) {
+
+					planectr.position.copy( INTERSECTED.position );
+					SELECTED = null;
+
+				}
+
+				container.style.cursor = 'auto';
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				render();
+				stats.update();
+
+			}
+
+			function render() {
+
+				controls.update( clock.getDelta() );
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+</html>
