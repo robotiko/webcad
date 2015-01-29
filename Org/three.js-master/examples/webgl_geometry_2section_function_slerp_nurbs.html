@@ -38,8 +38,8 @@
 
 			var container, stats;
 
-			var camera, scene, controls, renderer,projector ,INTERSECTED, SELECTED,plane,planectr,nubrsgeo;
-			var particles, objects = [];
+			var camera, scene, controls, renderer,projector ,INTERSECTED, SELECTED,plane,planef,planeb,planen,planet,planectr,nubrsgeo;
+			var particles, objects = [],cpoints = [];
 			var nurbsControlPointsGeometry = new THREE.Geometry();
 			var nurbsControlPointsGeometryf = new THREE.Geometry();
 			var nurbsControlPointsGeometrye = new THREE.Geometry();
@@ -290,6 +290,7 @@
 				var pgeo = nurbsControlPointsGeometry.clone();
 				for (var i = nurbsControlPoints.length - 1; i >= 0; i--) {
 						var planegeometry = new THREE.PlaneGeometry( 5, 5 );
+						planegeometry.name = "plane";
 						var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
 						plane = new THREE.Mesh( planegeometry, planematerial );
 						plane.position.x = nurbsControlPoints[i].x;
@@ -300,41 +301,46 @@
 						objects.push( plane );
 				};
 
-				// for (var i = nurbsControlPointf.length - 1; i >= 0; i--) {
-				// 		var planegeometry = new THREE.PlaneGeometry( 5, 5 );
-				// 		var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
-				// 		plane = new THREE.Mesh( planegeometry, planematerial );
-				// 		plane.position.x = nurbsControlPointf[i].x;
-				// 		plane.position.y = nurbsControlPointf[i].y;
-				// 		plane.position.z = nurbsControlPointf[i].z;
-				// 		plane.name = i;
-				// 		scene.add(plane);
-				// 		objects.push( plane );
-				// };
+				for (var i = nurbsControlPointf.length - 1; i >= 0; i--) {
+						var planegeometry = new THREE.PlaneGeometry( 5, 5 );
+						planegeometry.name = "planef";
+						var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+						planef = new THREE.Mesh( planegeometry, planematerial );
+						planef.position.x = nurbsControlPointf[i].x;
+						planef.position.y = nurbsControlPointf[i].y;
+						planef.position.z = nurbsControlPointf[i].z;
+						planef.rotation.y = Math.PI / 2;
+						planef.name = i;
+						scene.add(planef);
+						objects.push( planef );
+				};
 
-				// for (var i = nurbsControlPointb.length - 1; i >= 0; i--) {
-				// 		var planegeometry = new THREE.PlaneGeometry( 5, 5 );
-				// 		var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
-				// 		plane = new THREE.Mesh( planegeometry, planematerial );
-				// 		plane.position.x = nurbsControlPointb[i].x;
-				// 		plane.position.y = nurbsControlPointb[i].y;
-				// 		plane.position.z = nurbsControlPointb[i].z;
-				// 		plane.name = i;
-				// 		scene.add(plane);
-				// 		objects.push( plane );
-				// };
+				for (var i = nurbsControlPointb.length - 1; i >= 0; i--) {
+						var planegeometry = new THREE.PlaneGeometry( 5, 5 );
+						planegeometry.name = "planeb";
+						var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+						planeb = new THREE.Mesh( planegeometry, planematerial );
+						planeb.position.x = nurbsControlPointb[i].x;
+						planeb.position.y = nurbsControlPointb[i].y;
+						planeb.position.z = nurbsControlPointb[i].z;
+						planeb.rotation.y = Math.PI / 2;
+						planeb.name = i;
+						scene.add(planeb);
+						objects.push( planeb );
+				};
 
-				// for (var i = nurbsControlPointn.length - 1; i >= 0; i--) {
-				// 		var planegeometry = new THREE.PlaneGeometry( 5, 5 );
-				// 		var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
-				// 		plane = new THREE.Mesh( planegeometry, planematerial );
-				// 		plane.position.x = nurbsControlPointn[i].x;
-				// 		plane.position.y = nurbsControlPointn[i].y;
-				// 		plane.position.z = nurbsControlPointn[i].z;
-				// 		plane.name = i;
-				// 		scene.add(plane);
-				// 		objects.push( plane );
-				// };
+				for (var i = nurbsControlPointn.length - 1; i >= 0; i--) {
+						var planegeometry = new THREE.PlaneGeometry( 5, 5 );
+						planegeometry.name = "planen";
+						var planematerial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+						planen = new THREE.Mesh( planegeometry, planematerial );
+						planen.position.x = nurbsControlPointn[i].x;
+						planen.position.y = nurbsControlPointn[i].y;
+						planen.position.z = nurbsControlPointn[i].z;
+						planen.name = i;
+						scene.add(planen);
+						objects.push( planen );
+				};
 
 				// planectr = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.75, transparent: true } ) );
 				planectr = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.75, transparent: true, wireframe: true } ) );
@@ -429,7 +435,7 @@
 								nurbsKnotsbot.push( 0 );
 
 							}
-							var cpoints = curve.getFlowerPoints(step);
+							cpoints = curve.getFlowerPoints(step);
 							for ( var v = 0, w = cpoints.length; v < w; v ++ ) {
 								if (v%3 != 1) {
 									nurbsControlPointbot.push(
@@ -461,15 +467,15 @@
 							var nurbsGeometrybot = new THREE.Geometry();
 							nurbsGeometrybot.vertices = nurbsCurvebot.getPoints(step * 4);
 
-							var nurbsMaterial = new THREE.LineBasicMaterial( { linewidth: 10, color: 0x0022ee, opacity: 0.75, transparent: false } );
-							var nurbsLinen = new THREE.Line( nurbsGeometrybot, nurbsMaterial );
-							group.add( nurbsLinen );
+							// var nurbsMaterial = new THREE.LineBasicMaterial( { linewidth: 10, color: 0x0022ee, opacity: 0.75, transparent: false } );
+							// var nurbsLinen = new THREE.Line( nurbsGeometrybot, nurbsMaterial );
+							// group.add( nurbsLinen );
 							
-							var nurbsControlPointsGeometrybot = new THREE.Geometry();
-							nurbsControlPointsGeometrybot.vertices = nurbsCurvebot.controlPoints;
-							var nurbsControlPointsMaterial = new THREE.LineBasicMaterial( { linewidth: 5, color: 0xee2233, opacity: 0.75, transparent: true } );
-							var nurbsControlPointsLine = new THREE.Line( nurbsControlPointsGeometrybot, nurbsControlPointsMaterial );
-							group.add( nurbsControlPointsLine );
+							// var nurbsControlPointsGeometrybot = new THREE.Geometry();
+							// nurbsControlPointsGeometrybot.vertices = nurbsCurvebot.controlPoints;
+							// var nurbsControlPointsMaterial = new THREE.LineBasicMaterial( { linewidth: 5, color: 0xee2233, opacity: 0.75, transparent: true } );
+							// var nurbsControlPointsLine = new THREE.Line( nurbsControlPointsGeometrybot, nurbsControlPointsMaterial );
+							// group.add( nurbsControlPointsLine );
 
 							var ecpoints = nurbsCurvebot.getPoints(step * 4);
 							// console.log(ecpoints);
@@ -587,24 +593,121 @@
 
 
 				if ( SELECTED ) {
+					var intersects = raycaster.intersectObject( planectr );
+					if (SELECTED.geometry.name == "plane") {
+						// SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+						SELECTED.position.x = intersects[ 0 ].point.sub( offset ).x;
+						SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
+						// nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
+						nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x ,SELECTED.position.y,0,1);
+						nurbsGeometry.vertices = nurbsCurve.getPoints(200);
+						nurbsGeometry.verticesNeedUpdate = true;
+						// surefacegeo.vertices  = nurbsGeometry.vertices;
+						// surefacegeoHalf.update(nurbsGeometry.vertices);
+						// surefacegeoHalf.verticesNeedUpdate = true;
+						// surefacegeo.update(nurbsGeometry.vertices);
+						// surefacegeo.verticesNeedUpdate = true;
+						nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x;
+						nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y;
+						// nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+
+					} else if(SELECTED.geometry.name == "planef"){
+						// SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+						SELECTED.position.z = intersects[ 0 ].point.sub( offset ).z;
+						SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
+						// nurbsCurvef.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
+						nurbsCurvef.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(0 ,SELECTED.position.y,SELECTED.position.z,1);
+						nurbsGeometryf.vertices = nurbsCurvef.getPoints(200);
+						nurbsGeometryf.verticesNeedUpdate = true;
+						// surefacegeo.vertices  = nurbsGeometryf.vertices;
+						// surefacegeoHalf.update(nurbsGeometryf.vertices);
+						// surefacegeoHalf.verticesNeedUpdate = true;
+						// surefacegeo.update(nurbsGeometryf.vertices);
+						// surefacegeo.verticesNeedUpdate = true;
+						nurbsControlPointsGeometryf.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+						nurbsControlPointsGeometryf.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y;
+						// nurbsControlPointsGeometryf.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+
+					} else if(SELECTED.geometry.name == "planeb") {
+						// SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+						SELECTED.position.z = intersects[ 0 ].point.sub( offset ).z;
+						SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
+						// nurbsCurvee.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
+						nurbsCurvee.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(0 ,SELECTED.position.y,SELECTED.position.z,1);
+						nurbsGeometrye.vertices = nurbsCurvee.getPoints(200);
+						nurbsGeometrye.verticesNeedUpdate = true;
+						// surefacegeo.vertices  = nurbsGeometrye.vertices;
+						// surefacegeoHalf.update(nurbsGeometrye.vertices);
+						// surefacegeoHalf.verticesNeedUpdate = true;
+						// surefacegeo.update(nurbsGeometrye.vertices);
+						// surefacegeo.verticesNeedUpdate = true;
+						nurbsControlPointsGeometrye.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+						nurbsControlPointsGeometrye.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y;
+						// nurbsControlPointsGeometrye.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+
+					} else if (SELECTED.geometry.name == "planen") {
+						// SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+						SELECTED.position.x = intersects[ 0 ].point.sub( offset ).x;
+						SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
+						// nurbsCurven.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
+						nurbsCurven.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x ,SELECTED.position.y,0,1);
+						nurbsGeometryn.vertices = nurbsCurven.getPoints(200);
+						nurbsGeometryn.verticesNeedUpdate = true;
+						// surefacegeo.vertices  = nurbsGeometryn.vertices;
+						// surefacegeoHalf.update(nurbsGeometryn.vertices);
+						// surefacegeoHalf.verticesNeedUpdate = true;
+						// surefacegeo.update(nurbsGeometryn.vertices);
+						// surefacegeo.verticesNeedUpdate = true;
+						nurbsControlPointsGeometryn.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x;
+						nurbsControlPointsGeometryn.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y;
+						// nurbsControlPointsGeometryn.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+
+					} else{
+						// SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+						SELECTED.position.x = intersects[ 0 ].point.sub( offset ).x;
+						SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
+						// nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
+						nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x ,SELECTED.position.y,0,1);
+						nurbsGeometry.vertices = nurbsCurve.getPoints(200);
+						nurbsGeometry.verticesNeedUpdate = true;
+						// surefacegeo.vertices  = nurbsGeometry.vertices;
+						// surefacegeoHalf.update(nurbsGeometry.vertices);
+						// surefacegeoHalf.verticesNeedUpdate = true;
+						// surefacegeo.update(nurbsGeometry.vertices);
+						// surefacegeo.verticesNeedUpdate = true;
+						nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x;
+						nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y;
+						// nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+
+					};
 
 					var intersects = raycaster.intersectObject( planectr );
-					// SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
-					SELECTED.position.x = intersects[ 0 ].point.sub( offset ).x;
-					SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
-					// nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
-					nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x ,SELECTED.position.y,0,1);
-					nurbsGeometry.vertices = nurbsCurve.getPoints(200);
-					nurbsGeometry.verticesNeedUpdate = true;
-					// surefacegeo.vertices  = nurbsGeometry.vertices;
-					// surefacegeoHalf.update(nurbsGeometry.vertices);
-					// surefacegeoHalf.verticesNeedUpdate = true;
-					// surefacegeo.update(nurbsGeometry.vertices);
-					// surefacegeo.verticesNeedUpdate = true;
-					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x;
-					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y;
-					// nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
+					// // SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+					// SELECTED.position.x = intersects[ 0 ].point.sub( offset ).x;
+					// SELECTED.position.y = intersects[ 0 ].point.sub( offset ).y;
+					// // nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x,SELECTED.position.y + 100,SELECTED.position.z,1);
+					// nurbsCurve.controlPoints[parseInt(SELECTED.name)] = new THREE.Vector4(SELECTED.position.x ,SELECTED.position.y,0,1);
+					// nurbsGeometry.vertices = nurbsCurve.getPoints(200);
+					// nurbsGeometry.verticesNeedUpdate = true;
+					// // surefacegeo.vertices  = nurbsGeometry.vertices;
+					// // surefacegeoHalf.update(nurbsGeometry.vertices);
+					// // surefacegeoHalf.verticesNeedUpdate = true;
+					// // surefacegeo.update(nurbsGeometry.vertices);
+					// // surefacegeo.verticesNeedUpdate = true;
+					// nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x;
+					// nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y;
+					// // nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
 					nurbsControlPointsGeometry.verticesNeedUpdate = true;
+					nurbsControlPointsGeometryf.verticesNeedUpdate = true;
+					nurbsControlPointsGeometrye.verticesNeedUpdate = true;
+					nurbsControlPointsGeometryn.verticesNeedUpdate = true;
+					var points = nurbsGeometry.vertices.slice(0);
+					var pointf = nurbsGeometryf.vertices.slice(0);
+					var pointe = nurbsGeometrye.vertices.slice(0);
+					var pointn = nurbsGeometryn.vertices.slice(0);
+					var pointsArray= new Array(points,pointf,pointn,pointe);
+					nubrsgeo.update();
+					nubrsgeo.verticesNeedUpdate = true;
 					render();
 					// console.log(SELECTED);
 					// console.log(nurbsControlPoints[parseInt(SELECTED.name)]);
