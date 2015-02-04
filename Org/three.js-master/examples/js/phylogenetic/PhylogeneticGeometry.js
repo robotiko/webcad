@@ -28,19 +28,34 @@ THREE.PhylogeneticGeometry = function ( particlecnt, groupcnt, particleMin, part
 	// 	transparent: true
 	// }   );
 	var textureFlare0 = THREE.ImageUtils.loadTexture( "textures/lensflare/lensflare0.png" );
-	var material = new THREE.ShaderMaterial({ 
-	    uniforms: {
-	     	texture:{type: "t", value: textureFlare0}
-	    }, 
-	    attributes: {
-	     	"size":{type: "f", value: 30.0},
-	      	pcolor: { type: "c", value: new THREE.Color(0.3,0.5,0.8)}
-	    }, 
-	    vertexShader: document.getElementById('vertexshader').textContent, 
-	    fragmentShader: document.getElementById('fragmentshader').textContent 
-	});
+	// var attributes = {
 
-	this.materialsp = material;
+	// 	size:        { type: 'f', value: null },
+	// 	customColor: { type: 'c', value: null }
+
+	// };
+
+	// uniforms = {
+
+	// 	color:     { type: "c", value: new THREE.Color( 0xffffff ) },
+	// 	texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "textures/sprites/spark1.png" ) }
+
+	// };
+
+	// var shaderMaterial = new THREE.ShaderMaterial( {
+
+	// 	uniforms:       uniforms,
+	// 	attributes:     attributes,
+	// 	vertexShader:   document.getElementById( 'vertexshader' ).textContent,
+	// 	fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+
+	// 	blending:       THREE.AdditiveBlending,
+	// 	depthTest:      false,
+	// 	transparent:    true
+
+	// });
+
+	// this.materialsp = shaderMaterial;
 }
 
 THREE.PhylogeneticGeometry.prototype = Object.create( THREE.Object3D.prototype );
@@ -83,7 +98,8 @@ THREE.PhylogeneticGeometry.prototype.generatedata = function (){
 			var vcolor = new THREE.Color();
 			vcolor.setRGB(Math.random(),Math.random(),Math.random());
 //			vcolor.setRGB(i/this.groupcnt,i/this.groupcnt + 0.5,i/this.groupcnt + 0.5);
-			grouparray.push({loc:THREE.Math.randInt(this.particleMin,this.particleMax),color: vcolor});
+			// grouparray.push({loc:THREE.Math.randInt(this.particleMin,this.particleMax),color: vcolor});
+			grouparray.push(THREE.Math.randInt(this.particleMin,this.particleMax));
 		}
 		tmpdata.push(grouparray);
 	}
@@ -129,6 +145,8 @@ THREE.PhylogeneticGeometry.prototype.particledraw = function (points, segments, 
 	for ( var i = 0; i < positions.length; i += 3 ) {
 
 		// positions
+		// var x = points[ i / 3 ].loc * Math.cos( inverseSegments  * thetaLength + thetaStart);
+		// var y = points[ i / 3 ].loc * Math.sin( inverseSegments  * thetaLength + thetaStart);
 
 		var x = points[ i / 3 ].loc * Math.cos( inverseSegments  * thetaLength + thetaStart);
 		var y = points[ i / 3 ].loc * Math.sin( inverseSegments  * thetaLength + thetaStart);
@@ -157,9 +175,36 @@ THREE.PhylogeneticGeometry.prototype.particledraw = function (points, segments, 
 
 	geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
 	geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+	// geometry.addAttribute( 'size', new THREE.BufferAttribute( values_size, 1 ) );
 	geometry.computeBoundingSphere();
+	var attributes = {
 
-	// var material = new THREE.PointCloudMaterial( { size: 30, color: 0xff7744, vertexColors: THREE.VertexColors } );
+		"size":        { type: 'f', value: 30.0 },
+		customColor: { type: 'c', value: new THREE.Color( 0xffffff ) }
+
+	};
+
+	uniforms = {
+
+		color:     { type: "c", value: new THREE.Color( 0xffffff ) },
+		texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "textures/sprites/spark1.png" ) }
+
+	};
+
+	var shaderMaterial = new THREE.ShaderMaterial( {
+
+		uniforms:       uniforms,
+		attributes:     attributes,
+		vertexShader:   document.getElementById( 'vertexshader' ).textContent,
+		fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+
+		blending:       THREE.AdditiveBlending,
+		depthTest:      false,
+		transparent:    true
+
+	});
+
+	var material = new THREE.PointCloudMaterial( { size: 30, color: 0xff7744, vertexColors: THREE.VertexColors } );
 	// var material = new THREE.ShaderMaterial({ 
 	//     uniforms: {
 	//      	size:{type: "t", value: textureFlare0}
@@ -172,7 +217,7 @@ THREE.PhylogeneticGeometry.prototype.particledraw = function (points, segments, 
 	//     fragmentShader: document.getElementById('fragmentshader').textContent 
 	// });
 
- 	particleSystem = new THREE.PointCloud( geometry, this.materialsp )
+ 	particleSystem = new THREE.PointCloud( geometry, shaderMaterial )
 	this.add(particleSystem);
 
 	//

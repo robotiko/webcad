@@ -57,6 +57,7 @@
 		<script src="js/shaders/CopyShader.js"></script>
 		<script src="js/shaders/FilmShader.js"></script>
 		<script src="js/shaders/FocusShader.js"></script>
+		<script src="js/shaders/LuminosityShader.js"></script>
 
 		<script src="js/postprocessing/EffectComposer.js"></script>
 		<script src="js/postprocessing/MaskPass.js"></script>
@@ -64,93 +65,44 @@
 		<script src="js/postprocessing/BloomPass.js"></script>
 		<script src="js/postprocessing/ShaderPass.js"></script>
 		<script src="js/postprocessing/FilmPass.js"></script>
-
 		<script type="x-shader/x-vertex" id="vertexshader">
 
 			attribute float size;
-			attribute vec3 pcolor;
-
-			varying vec3 vColor;
-
-			void main() {
-
-				vColor = pcolor;
-
-				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-
-				// gl_PointSize = size * ( 200.0 / length( mvPosition.xyz ) );
-				gl_PointSize = size * 3;
-
-				gl_Position = projectionMatrix * mvPosition;
-
-			}
-
-		</script>
-
-		<script type="x-shader/x-fragment" id="fragmentshader">
-
-			// uniform sampler2D texture;
-
-			varying vec3 vColor;
-
-			void main() {
-
-				vec4 outColor = texture2D( texture, gl_PointCoord );
-
-				gl_FragColor = outColor * vec4( vColor, 1.0 );
-
-			}
-
-		</script>
-<!--				<script type="x-shader/x-vertex" id="vertexshader">
-			uniform float amplitude;
-			attribute float size;
 			attribute vec3 customColor;
+
 			varying vec3 vColor;
+
 			void main() {
+
 				vColor = customColor;
+
 				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-				gl_PointSize = size;
+
+				gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
+
 				gl_Position = projectionMatrix * mvPosition;
+
 			}
+
 		</script>
 
 		<script type="x-shader/x-fragment" id="fragmentshader">
+
 			uniform vec3 color;
 			uniform sampler2D texture;
-			varying vec3 vColor;
-			void main() {
-				gl_FragColor = vec4( color * vColor, 1.0 );
-				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
-			}
-		</script> -->
-		<!--  Custom Shader Code  -->
-<!-- 		<script id="vertexShader" type="x-shader/x-vertex">
-		uniform vec3 viewVector;
-		uniform float c;
-		uniform float p;
-		varying float intensity;
-		void main() 
-		{
-		    vec3 vNormal = normalize( normalMatrix * normal );
-			vec3 vNormel = normalize( normalMatrix * viewVector );
-			intensity = pow( c - dot(vNormal, vNormel), p );
-			
-		    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-		}
-		</script> -->
 
-		<!-- fragment shader a.k.a. pixel shader -->
-<!-- 		<script id="fragmentShader" type="x-shader/x-vertex"> 
-		uniform vec3 glowColor;
-		varying float intensity;
-		void main() 
-		{
-			vec3 glow = glowColor * intensity;
-		    gl_FragColor = vec4( glow, 1.0 );
-		}
-		</script> -->
-<!--  -->
+			varying vec3 vColor;
+
+			void main() {
+
+				gl_FragColor = vec4( color * vColor, 1.0 );
+
+				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+
+			}
+
+		</script>
+
 
 		<script>
 
@@ -202,6 +154,11 @@
 				// world
 
 
+				// var map = THREE.ImageUtils.loadTexture( "textures/sprites/spark1.png" );
+    //             var material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: true } );
+    //             var sprite = new THREE.Sprite( material );
+    //             scene.add( sprite );
+
 				// lights
 				var ambient = new THREE.AmbientLight( 0xffffff );
 				ambient.color.setHSL( 0.1, 0.3, 0.2 );
@@ -217,7 +174,7 @@
 				var splight = new THREE.SpotLight();
 
 				// phylogenetic tree
-				var obj = new THREE.PhylogeneticGeometry(100,10,1000,2500);
+				var obj = new THREE.PhylogeneticGeometry(10000,10,1000,2500);
 				scene.add(obj);
 
 				// renderer
@@ -226,38 +183,48 @@
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				var colorbg = new THREE.Color();
 				colorbg.setStyle("rgb(10,10,25)");
-				renderer.setClearColor( colorbg, 1 );
+				renderer.setClearColor( colorbg, 0.2 );
 
 				container = document.getElementById( 'container' );
 				container.appendChild( renderer.domElement );
 
 				//
 
-				renderer.gammaInput = true;
-				renderer.gammaOutput = true;
+				// renderer.gammaInput = true;
+				// renderer.gammaOutput = true;
 
 				// stats
 
 				stats = new Stats();
 				container.appendChild( stats.domElement );
 
-				var renderModel = new THREE.RenderPass( scene, camera );
-				var effectBloom = new THREE.BloomPass( 0.75 );
-				var effectFilm = new THREE.FilmPass( 0.5, 0.5, 1448, false );
+				// postprocessing
 
-				effectFocus = new THREE.ShaderPass( THREE.FocusShader );
+				// composer = new THREE.EffectComposer( renderer );
+				// composer.addPass( new THREE.RenderPass( scene, camera ) );
 
-				effectFocus.uniforms[ "screenWidth" ].value = window.innerWidth;
-				effectFocus.uniforms[ "screenHeight" ].value = window.innerHeight;
+				// depthTarget = new THREE.WebGLRenderTarget( window.innerWidth * depthScale, window.innerHeight * depthScale, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter } );
 
-				effectFocus.renderToScreen = true;
+				// ssaoEffect = new THREE.ShaderPass( THREE.SSAOShader );
+				// ssaoEffect.uniforms[ 'tDepth' ].value = depthTarget;
+				// ssaoEffect.uniforms[ 'size' ].value.set( window.innerWidth * depthScale, window.innerHeight * depthScale );
+				// ssaoEffect.uniforms[ 'cameraNear' ].value = camera.near;
+				// ssaoEffect.uniforms[ 'cameraFar' ].value = camera.far;
+				// composer.addPass( ssaoEffect );
 
-				composer = new THREE.EffectComposer( renderer );
+				// dotScreenEffect = new THREE.ShaderPass( THREE.DotScreenShader );
+				// dotScreenEffect.uniforms[ 'scale' ].value = 4;
+				// composer.addPass( dotScreenEffect );
 
-				composer.addPass( renderModel );
-				composer.addPass( effectBloom );
-				composer.addPass( effectFilm );
-				composer.addPass( effectFocus );
+				// rgbShiftEffect = new THREE.ShaderPass( THREE.RGBShiftShader );
+				// rgbShiftEffect.uniforms[ 'amount' ].value = 0.0015;
+				// composer.addPass( rgbShiftEffect );
+
+				// var effect = new THREE.ShaderPass( THREE.LuminosityShader);
+				// effect.uniforms[ 'tDiffuse' ].value = THREE.ImageUtils.loadTexture( "textures/lensflare/lensflare0.png" );
+				// effect.renderToScreen = true;
+				// composer.addPass( effect );
+
 
 				// events
 				window.addEventListener( 'resize', onWindowResize, false );
