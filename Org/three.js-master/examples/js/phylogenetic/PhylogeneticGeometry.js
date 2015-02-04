@@ -12,6 +12,35 @@ THREE.PhylogeneticGeometry = function ( particlecnt, groupcnt, particleMin, part
 	this.grouprange = [];
 	this.data = data !== undefined ? data : this.generatedata();
 	this.draw();
+	// var material = new THREE.ShaderMaterial( 
+	// {
+	//     uniforms: 
+	// 	{ 
+	// 		"c":   { type: "f", value: 1.0 },
+	// 		"p":   { type: "f", value: 1.4 },
+	// 		glowColor: { type: "c", value: new THREE.Color(0xffff00) },
+	// 		viewVector: { type: "v3", value: camera.position }
+	// 	},
+	// 	vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+	// 	fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+	// 	side: THREE.FrontSide,
+	// 	blending: THREE.AdditiveBlending,
+	// 	transparent: true
+	// }   );
+	var textureFlare0 = THREE.ImageUtils.loadTexture( "textures/lensflare/lensflare0.png" );
+	var material = new THREE.ShaderMaterial({ 
+	    uniforms: {
+	     	texture:{type: "t", value: textureFlare0}
+	    }, 
+	    attributes: {
+	     	"size":{type: "f", value: 30.0},
+	      	pcolor: { type: "c", value: new THREE.Color(0.3,0.5,0.8)}
+	    }, 
+	    vertexShader: document.getElementById('vertexshader').textContent, 
+	    fragmentShader: document.getElementById('fragmentshader').textContent 
+	});
+
+	this.materialsp = material;
 }
 
 THREE.PhylogeneticGeometry.prototype = Object.create( THREE.Object3D.prototype );
@@ -93,7 +122,7 @@ THREE.PhylogeneticGeometry.prototype.particledraw = function (points, segments, 
 	var positions = new Float32Array( segments * 3 );
 	var colors = new Float32Array( segments * 3 );
 
-	var color = new THREE.Color();
+	var color = new THREE.Color(0xff7744);
 
 	// var n = 1000, n2 = n / 2; // particles spread in the cube
 
@@ -116,7 +145,7 @@ THREE.PhylogeneticGeometry.prototype.particledraw = function (points, segments, 
 		// var vz = (inverseSegments  * thetaLength + thetaStart) / Math.PI * 2 + 0.5;
 
 		// color.setRGB(Math.random(),Math.random(),Math.random());
-		color = points[ i / 3 ].color;
+		// color = points[ i / 3 ].color;
 
 		colors[ i ]     = color.r;
 		colors[ i + 1 ] = color.g;
@@ -130,8 +159,20 @@ THREE.PhylogeneticGeometry.prototype.particledraw = function (points, segments, 
 	geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
 	geometry.computeBoundingSphere();
 
-	var material = new THREE.PointCloudMaterial( { size: 30, vertexColors: THREE.VertexColors } );
-	particleSystem = new THREE.PointCloud( geometry, material )
+	// var material = new THREE.PointCloudMaterial( { size: 30, color: 0xff7744, vertexColors: THREE.VertexColors } );
+	// var material = new THREE.ShaderMaterial({ 
+	//     uniforms: {
+	//      	size:{type: "t", value: textureFlare0}
+	//     }, 
+	//     attributes: {
+	//      	size:{type: "f", value: 20.0},
+	//       	pcolor: { type: "c", value: new THREE.Color(0.3,0.5,0.8)}
+	//     }, 
+	//     vertexShader: document.getElementById('vertexshader').textContent, 
+	//     fragmentShader: document.getElementById('fragmentshader').textContent 
+	// });
+
+ 	particleSystem = new THREE.PointCloud( geometry, this.materialsp )
 	this.add(particleSystem);
 
 	//
