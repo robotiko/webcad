@@ -98,8 +98,8 @@ THREE.PhylogeneticGeometry.prototype.generatedata = function (){
 			var vcolor = new THREE.Color();
 			vcolor.setRGB(Math.random(),Math.random(),Math.random());
 //			vcolor.setRGB(i/this.groupcnt,i/this.groupcnt + 0.5,i/this.groupcnt + 0.5);
-			// grouparray.push({loc:THREE.Math.randInt(this.particleMin,this.particleMax),color: vcolor});
-			grouparray.push(THREE.Math.randInt(this.particleMin,this.particleMax));
+			grouparray.push({loc:THREE.Math.randInt(this.particleMin,this.particleMax),color: vcolor});
+			// grouparray.push(THREE.Math.randInt(this.particleMin,this.particleMax));
 		}
 		tmpdata.push(grouparray);
 	}
@@ -137,6 +137,7 @@ THREE.PhylogeneticGeometry.prototype.particledraw = function (points, segments, 
 
 	var positions = new Float32Array( segments * 3 );
 	var colors = new Float32Array( segments * 3 );
+	var values_size = new Float32Array( segments );
 
 	var color = new THREE.Color(0xff7744);
 
@@ -157,7 +158,7 @@ THREE.PhylogeneticGeometry.prototype.particledraw = function (points, segments, 
 		positions[ i + 2 ] = z;
 
 		// colors
-
+		values_size[ i ] = 20.0;
 		// var vx = (inverseSegments  * thetaLength + thetaStart) / Math.PI * 2;
 		// var vy = (inverseSegments  * thetaLength + thetaStart) / Math.PI * 2;
 		// var vz = (inverseSegments  * thetaLength + thetaStart) / Math.PI * 2 + 0.5;
@@ -175,12 +176,12 @@ THREE.PhylogeneticGeometry.prototype.particledraw = function (points, segments, 
 
 	geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
 	geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
-	// geometry.addAttribute( 'size', new THREE.BufferAttribute( values_size, 1 ) );
+	geometry.addAttribute( 'size', new THREE.BufferAttribute( values_size, 1 ) );
 	geometry.computeBoundingSphere();
 	var attributes = {
 
-		"size":        { type: 'f', value: 30.0 },
-		customColor: { type: 'c', value: new THREE.Color( 0xffffff ) }
+		"size":        { type: 'f', value: null },
+		 color: { type: 'c', value: new THREE.Color( 0xffffff ) }
 
 	};
 
