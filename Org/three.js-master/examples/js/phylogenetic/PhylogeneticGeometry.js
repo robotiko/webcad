@@ -179,7 +179,7 @@ THREE.PhylogeneticGeometry.prototype.particledraw = function (points, segments, 
 	geometry.computeBoundingSphere();
 	var attributes = {
 
-		"size":        { type: 'f', value: 30.0 },
+		size:        { type: 'f', value: 30.0 },
 		customColor: { type: 'c', value: new THREE.Color( 0xffffff ) }
 
 	};
