@@ -143,19 +143,18 @@ THREE.PhylogeneticGeometry.prototype.particledraw = function (points, segments, 
 
 	// var n = 1000, n2 = n / 2; // particles spread in the cube
 
-	for ( var i = 0; i < positions.length; i += 3 ) {
-
+	for ( var i = 0; i < points.length; i++ ) {
 		// positions
 		// var x = points[ i / 3 ].loc * Math.cos( inverseSegments  * thetaLength + thetaStart);
 		// var y = points[ i / 3 ].loc * Math.sin( inverseSegments  * thetaLength + thetaStart);
 
-		var x = points[ i / 3 ].loc * Math.cos( inverseSegments  * thetaLength + thetaStart);
-		var y = points[ i / 3 ].loc * Math.sin( inverseSegments  * thetaLength + thetaStart);
+		var x = points[ i ].loc * Math.cos( inverseSegments  * thetaLength + thetaStart);
+		var y = points[ i ].loc * Math.sin( inverseSegments  * thetaLength + thetaStart);
 		var z =  3;// Math.random() * points[ i / 3 ];
 
-		positions[ i ]     = x;
-		positions[ i + 1 ] = y;
-		positions[ i + 2 ] = z;
+		positions[ i * 3 + 0 ] = x;
+		positions[ i * 3 + 1 ] = y;
+		positions[ i * 3 + 2 ] = z;
 
 		// colors
 		values_size[ i ] = 20.0;
@@ -166,27 +165,21 @@ THREE.PhylogeneticGeometry.prototype.particledraw = function (points, segments, 
 		// color.setRGB(Math.random(),Math.random(),Math.random());
 		// color = points[ i / 3 ].color;
 
-		colors[ i ]     = color.r;
-		colors[ i + 1 ] = color.g;
-		colors[ i + 2 ] = color.b;
+		colors[ i * 3 + 0 ] = color.r;
+		colors[ i * 3 + 1 ] = color.g;
+		colors[ i * 3 + 2 ] = color.b;
 
 		inverseSegments += inverseSegments;
 
 	}
 
+	geometry.addAttribute( 'size', new THREE.BufferAttribute( values_size, 1 ) );
 	geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
 	geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
-	geometry.addAttribute( 'size', new THREE.BufferAttribute( values_size, 1 ) );
-	geometry.computeBoundingSphere();
+	// geometry.computeBoundingSphere();
 	var attributes = {
-
-<<<<<<< HEAD
 		size:        { type: 'f', value: 30.0 },
 		customColor: { type: 'c', value: new THREE.Color( 0xffffff ) }
-=======
-		"size":        { type: 'f', value: null },
-		 color: { type: 'c', value: new THREE.Color( 0xffffff ) }
->>>>>>> aa334aea9e21c086c46c69935b293c33ab283453
 
 	};
 

@@ -1,0 +1,268 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<title>three.js webgl - Phylogenetic tree</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style type="text/css">
+			body {
+				background:#000;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+			#info {
+				position: absolute;
+				top: 10px; width: 100%;
+				color: #ffffff;
+				padding: 5px;
+				font-family: Monospace;
+				font-size: 13px;
+				text-align: center;
+				z-index:100;
+			}
+
+			a {
+				color: orange;
+				text-decoration: none;
+			}
+
+			a:hover {
+				color: #0080ff;
+			}
+
+/*			#stats { position: absolute; top:0; left: 0 }
+			#stats #fps { background: transparent !important }
+			#stats #fps #fpsText { color: #aaa !important }
+			#stats #fps #fpsGraph { display: none }*/
+		</style>
+	</head>
+
+	<body>
+		<div id="container"></div>
+		<div id="info">
+			<a href="http://blog.csdn.net/omni360" target="_blank">three.js</a> - lensflares -
+			textures from <a href="http://ro.me">ro.me</a> - MOVE mouse &amp; press LEFT/A: rotate, MIDDLE/S: zoom, RIGHT/D: pan
+		</div>
+
+		<script src="../build/three.js"></script>
+
+		<script src="js/controls/TrackballControls.js"></script>
+		<script type="text/javascript" src="js/phylogenetic/PhylogeneticGeometry.js"></script>
+		<script src="js/Detector.js"></script>
+		<script src="js/libs/stats.min.js"></script>
+
+		<script src="js/shaders/ConvolutionShader.js"></script>
+		<script src="js/shaders/CopyShader.js"></script>
+		<script src="js/shaders/FilmShader.js"></script>
+		<script src="js/shaders/FocusShader.js"></script>
+		<script src="js/shaders/LuminosityShader.js"></script>
+
+		<script src="js/postprocessing/EffectComposer.js"></script>
+		<script src="js/postprocessing/MaskPass.js"></script>
+		<script src="js/postprocessing/RenderPass.js"></script>
+		<script src="js/postprocessing/BloomPass.js"></script>
+		<script src="js/postprocessing/ShaderPass.js"></script>
+		<script src="js/postprocessing/FilmPass.js"></script>
+		<script type="x-shader/x-vertex" id="vertexshader">
+
+			attribute float size;
+			attribute vec3 customColor;
+
+			varying vec3 vColor;
+
+			void main() {
+
+				vColor = customColor;
+
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+
+				gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
+
+				gl_Position = projectionMatrix * mvPosition;
+
+			}
+
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentshader">
+
+			uniform vec3 color;
+			uniform sampler2D texture;
+
+			varying vec3 vColor;
+
+			void main() {
+
+				gl_FragColor = vec4( color * vColor, 1.0 );
+
+				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+
+			}
+
+		</script>
+
+
+		<script>
+
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+			var container, stats;
+
+			var camera, scene, renderer, ringmesh;
+
+			var clock = new THREE.Clock();
+
+			var composer;
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				// camera
+
+				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 100, 10000 );
+				camera.position.z = 5000;
+
+				controls = new THREE.TrackballControls( camera );
+
+				controls.rotateSpeed = 1.0;
+				controls.zoomSpeed = 1.2;
+				controls.panSpeed = 0.8;
+
+				controls.noZoom = false;
+				controls.noPan = false;
+
+				controls.staticMoving = true;
+				controls.dynamicDampingFactor = 0.3;
+
+				controls.keys = [ 65, 83, 68 ];
+
+				controls.addEventListener( 'change', render );
+
+				// scene
+
+				scene = new THREE.Scene();
+				scene.fog = new THREE.Fog( 0x000000, 300, 9000 );
+				scene.fog.color.setHSL( 0.51, 0.4, 0.01 );
+
+				// world
+
+
+				// var map = THREE.ImageUtils.loadTexture( "textures/sprites/spark1.png" );
+    //             var material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: true } );
+    //             var sprite = new THREE.Sprite( material );
+    //             scene.add( sprite );
+
+				// lights
+				var ambient = new THREE.AmbientLight( 0xffffff );
+				ambient.color.setHSL( 0.1, 0.3, 0.2 );
+				scene.add( ambient );
+
+
+				var dirLight = new THREE.DirectionalLight( 0xffffff, 0.125 );
+				dirLight.position.set( 0, -1, 0 ).normalize();
+				scene.add( dirLight );
+
+				dirLight.color.setHSL( 0.1, 0.7, 0.5 );
+
+				var splight = new THREE.SpotLight();
+
+				// phylogenetic tree
+				var obj = new THREE.PhylogeneticGeometry(10000,10,1000,2500);
+				scene.add(obj);
+
+				// renderer
+
+				renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				var colorbg = new THREE.Color();
+				colorbg.setStyle("rgb(10,10,25)");
+				renderer.setClearColor( colorbg, 0.2 );
+
+				container = document.getElementById( 'container' );
+				container.appendChild( renderer.domElement );
+
+				//
+
+				// renderer.gammaInput = true;
+				// renderer.gammaOutput = true;
+
+				// stats
+
+				stats = new Stats();
+				container.appendChild( stats.domElement );
+
+				// postprocessing
+
+				// composer = new THREE.EffectComposer( renderer );
+				// composer.addPass( new THREE.RenderPass( scene, camera ) );
+
+				// depthTarget = new THREE.WebGLRenderTarget( window.innerWidth * depthScale, window.innerHeight * depthScale, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter } );
+
+				// ssaoEffect = new THREE.ShaderPass( THREE.SSAOShader );
+				// ssaoEffect.uniforms[ 'tDepth' ].value = depthTarget;
+				// ssaoEffect.uniforms[ 'size' ].value.set( window.innerWidth * depthScale, window.innerHeight * depthScale );
+				// ssaoEffect.uniforms[ 'cameraNear' ].value = camera.near;
+				// ssaoEffect.uniforms[ 'cameraFar' ].value = camera.far;
+				// composer.addPass( ssaoEffect );
+
+				// dotScreenEffect = new THREE.ShaderPass( THREE.DotScreenShader );
+				// dotScreenEffect.uniforms[ 'scale' ].value = 4;
+				// composer.addPass( dotScreenEffect );
+
+				// rgbShiftEffect = new THREE.ShaderPass( THREE.RGBShiftShader );
+				// rgbShiftEffect.uniforms[ 'amount' ].value = 0.0015;
+				// composer.addPass( rgbShiftEffect );
+
+				// var effect = new THREE.ShaderPass( THREE.LuminosityShader);
+				// effect.uniforms[ 'tDiffuse' ].value = THREE.ImageUtils.loadTexture( "textures/lensflare/lensflare0.png" );
+				// effect.renderToScreen = true;
+				// composer.addPass( effect );
+
+
+				// events
+				window.addEventListener( 'resize', onWindowResize, false );
+
+
+			}
+
+			//
+
+			function onWindowResize( event ) {
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				controls.handleResize();
+
+			}
+
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+				render();
+				controls.update();
+
+			}
+
+			function render() {
+				// ringmesh.rotation.y += Math.PI / 60;
+
+				renderer.render( scene, camera );
+				stats.update();
+
+			}
+
+		</script>
+
+	</body>
+</html>
