@@ -95,7 +95,7 @@
 
 				//
 
-				var light = new THREE.DirectionalLight( 0xffffff, 1 );
+				var light = new THREE.DirectionalLight( 0x559933, 1 );
 				light.position.set( 0, -1, 0 );
 				scene.add( light );
 
@@ -103,7 +103,7 @@
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
-				renderer.setClearColor( 0xffffff );
+				renderer.setClearColor( 0x559933 );
 				container.appendChild( renderer.domElement );
 
 				// CHARACTER
@@ -135,16 +135,28 @@
 
 				var cloader = new THREE.OBJMTLLoader();
 				cloader.load( 'obj/male02/male3.obj', 'obj/male02/male02_dds.mtl', function ( object ) {
-					object.scale.set(32,30,32);
+					object.scale.set(32,30,35);
 					object.position.copy(character.root.position);
-					object.position.z -= 300;
+					object.position.z -= 150;
 					object.position.x -= 65;
 					object.position.y += 30;
-					object.rotation.y += Math.PI / 8;
+					object.rotation.y += Math.PI / 9;
+					object.rotation.x -= Math.PI / 55;
 					scene.add( object );
 
 				} );
 
+				THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
+
+				var loader = new THREE.OBJMTLLoader();
+				loader.load( 'obj/bedroom/bedroom.obj', 'obj/bedroom/bedroom.mtl', function ( bedroom ) {
+					bedroom.scale.set(32,30,35);
+					bedroom.position.copy(character.root.position);
+					bedroom.position.x -= 13000;
+					bedroom.position.z -= 5000;
+					scene.add( bedroom );
+
+				} );
 
 				window.addEventListener( 'resize', onWindowResize, false );
 				
