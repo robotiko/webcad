@@ -182,7 +182,7 @@
 				group.add( sureface );
 
 				var pointshollow = hollow(points,6);
-				var hollowMaterial = new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, color: 0x339933, side: THREE.DoubleSide, wireframe: true } );
+				var hollowMaterial = new THREE.MeshLambertMaterial( { ambient: 0xbbbbbb, color: 0x339933, side: THREE.DoubleSide } );
 				surefacegeohollow =  new THREE.LatheGeometry( pointshollow, 40);
 				surefacehollow = new THREE.Mesh(surefacegeohollow, hollowMaterial );
 				surefacehollow.position.set( 100, 0, 0 );
@@ -280,13 +280,12 @@
 					surefacegeoHalf.verticesNeedUpdate = true;
 					surefacegeo.update(nurbsGeometry.vertices);
 					surefacegeo.verticesNeedUpdate = true;
-					var pt = hollow(nurbsGeometry.vertices,6);
-					surefacegeohollow.update(pt);
-					surefacegeohollow.verticesNeedUpdate = true;
 					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].x = SELECTED.position.x + 100;
 					nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].y = SELECTED.position.y + 100;
 					// nurbsControlPointsGeometry.vertices[parseInt(SELECTED.name)].z = SELECTED.position.z;
 					nurbsControlPointsGeometry.verticesNeedUpdate = true;
+					surefacegeohollow.hollowupdate(nurbsGeometry.vertices,6);
+					surefacegeohollow.verticesNeedUpdate = true;
 					render();
 					// console.log(SELECTED);
 					// console.log(nurbsControlPoints[parseInt(SELECTED.name)]);

@@ -31446,7 +31446,20 @@ THREE.LatheGeometry.prototype.update = function(pointsarg, segmentsarg, phiStart
 	// this.computeVertexNormals();
 
 }
+THREE.LatheGeometry.prototype.hollowupdate = function(pointsarg, thk){
 
+	var pt = pointsarg;
+	for (var i = pointsarg.length - 1; i >= 0; i--) {
+		var vertex = new THREE.Vector3( );
+		vertex.x = pointsarg[i].x + thk;
+		vertex.y = pointsarg[i].y;
+		vertex.z = pointsarg[i].z;
+		pt.push(vertex);
+	};
+	pt.push(pointsarg[0]);
+	this.update(pt);
+
+}
 
 THREE.NurbsGeometry = function(lerpPoints,segments){
 	THREE.Geometry.call( this );
